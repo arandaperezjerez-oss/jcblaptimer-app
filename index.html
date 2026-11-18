@@ -34,7 +34,10 @@ header{display:flex;justify-content:space-between;align-items:center;gap:10px;pa
 .pill.on{color:var(--ok);border-color:#1e4d2f}.pill.warn{color:var(--acc);border-color:#4d4012}
 
 /* estructura */
-.app{display:grid;gap:var(--gap)}
+.app{display:grid;gap:var(--gap);grid-template-columns:minmax(0,1fr)}
+select.inp{width:100%;text-overflow:ellipsis}
+.opts select.inp{width:auto}
+.opts label{white-space:nowrap}
 .col{display:grid;gap:var(--gap);align-content:start;min-width:0}
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px}
 .ch{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px}
@@ -55,7 +58,10 @@ header{display:flex;justify-content:space-between;align-items:center;gap:10px;pa
 .sp.pb{background:#2b1844;color:var(--pb)}.sp.slow{background:#352d0e;color:var(--acc)}.sp.run{box-shadow:inset 0 0 0 1px #3a4655;color:var(--txt)}
 
 /* controles de tanda */
-.ctrl{display:grid;grid-template-columns:1.25fr 1fr 1fr;gap:8px}
+.ctrl{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr) minmax(0,1fr);gap:8px}
+.g2,.g3,.ctrl{min-width:0}
+.btn{overflow:hidden;text-overflow:ellipsis}
+@media (max-width:400px){.btn{padding:0 8px;gap:6px;font-size:14px}.hdr-r .btn.sm{padding:0 9px}.user-chip{max-width:96px}}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:48px;padding:0 12px;border-radius:12px;border:1px solid var(--line);background:var(--card2);color:var(--txt);font-size:15px;font-weight:600;cursor:pointer;white-space:nowrap;min-width:0}
 .btn:active{transform:scale(.98)}
 .btn:disabled{opacity:.35;cursor:default;transform:none}
@@ -130,6 +136,26 @@ details.help li{margin-bottom:6px}
 #flash .lbl{color:var(--mut);font-size:16px;font-weight:700;letter-spacing:2px}
 #flash .sub2{color:var(--mut);font-size:15px}
 
+/* inclinación */
+.leanbox{display:grid;grid-template-columns:64px 1fr 64px;gap:10px;align-items:center;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+.lb-side small{display:block;font-size:11px;font-weight:600;color:var(--mut);text-transform:uppercase;letter-spacing:.5px}
+.lb-side b{font-size:18px;font-weight:700}
+.lb-mid b{display:block;font-size:22px;font-weight:800;margin-top:6px}
+.lb-bar{position:relative;height:10px;border-radius:6px;background:var(--card2);overflow:hidden}
+.lb-fill{position:absolute;top:0;bottom:0;background:var(--sec);border-radius:6px;transition:width .08s,left .08s}
+.lb-fill.hi{background:var(--acc)}
+.lb-c{position:absolute;left:50%;top:-2px;bottom:-2px;width:2px;background:#3a4655}
+.hint{font-size:13px;color:var(--mut);line-height:1.5;margin:0 0 12px}
+.steps{font-size:12px;color:var(--txt);margin-top:10px;line-height:1.5}
+.chk{display:flex;gap:8px;align-items:center}
+.chk input{width:18px;height:18px;accent-color:var(--acc)}
+
+.gbox{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px}
+.gbox div{background:var(--card2);border-radius:10px;padding:7px 4px}
+.gbox small{display:block;font-size:11px;font-weight:600;color:var(--mut);text-transform:uppercase;letter-spacing:.5px}
+.gbox b{display:block;font-size:18px;font-weight:800;margin:2px 0 1px}
+.gbox span{font-size:11px;color:var(--mut)}
+
 /* pantallas */
 [hidden]{display:none!important}
 .hdr-r{display:flex;gap:8px;align-items:center}
@@ -162,6 +188,8 @@ details.help li{margin-bottom:6px}
 .login label{display:block;font-size:12px;font-weight:600;color:var(--mut);margin:0 0 6px;text-transform:uppercase;letter-spacing:.6px}
 .login .inp{width:100%;height:48px;font-size:16px;margin-bottom:14px}
 .login .btn{width:100%}
+.remember{display:flex!important;align-items:center;gap:10px;margin:-2px 0 16px!important;text-transform:none!important;letter-spacing:0!important;font-size:14px!important;font-weight:500!important;color:var(--txt)!important;cursor:pointer}
+.remember input{width:20px;height:20px;accent-color:var(--acc);margin:0}
 .err{color:#fca5a5;font-size:13px;min-height:18px;margin:10px 0 0}
 .note{background:#1d1a0c;border:1px solid #4d4012;color:#fde68a;border-radius:12px;padding:12px;font-size:13px;line-height:1.5;margin-bottom:14px}
 
@@ -242,6 +270,7 @@ details.help li{margin-bottom:6px}
         <input class="inp" id="lUser" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="ej. javi">
         <label for="lPass">Contraseña</label>
         <input class="inp" id="lPass" type="password" autocomplete="current-password" placeholder="••••••">
+        <label class="remember"><input type="checkbox" id="lRemember" checked>Recordar mis datos en este dispositivo</label>
         <button class="btn acc" id="bLogin" type="submit"><svg class="i"><use href="#i-user"/></svg>Entrar</button>
       </form>
       <button class="btn" id="bDemo" style="width:100%;margin-top:10px" hidden>Probar en modo demo</button>
@@ -269,6 +298,16 @@ details.help li{margin-bottom:6px}
       <div class="big idle" id="cur">0:00.00</div>
       <div id="delta" class="delta">±0.00</div>
       <div id="secs" class="secs"></div>
+      <div class="leanbox" id="leanBox" hidden>
+        <div class="lb-side"><small>Máx I</small><b id="lMaxL">0°</b></div>
+        <div class="lb-mid"><div class="lb-bar"><div class="lb-fill" id="lFill"></div><div class="lb-c"></div></div><b id="lNow">0°</b></div>
+        <div class="lb-side"><small>Máx D</small><b id="lMaxR">0°</b></div>
+      </div>
+      <div class="gbox" id="gBox" hidden>
+        <div><small>Frenada</small><b id="gBrake">0.00 g</b><span id="gBrakeMax">máx 0.00</span></div>
+        <div><small>Aceleración</small><b id="gAcc">0.00 g</b><span id="gAccMax">máx 0.00</span></div>
+        <div><small>Lateral</small><b id="gLat">0.00 g</b><span id="gLatMax">máx 0.00</span></div>
+      </div>
     </section>
 
     <div class="ctrl">
@@ -292,11 +331,41 @@ details.help li{margin-bottom:6px}
         <button class="btn sm" id="bPhone"><svg class="i"><use href="#i-phone"/></svg>Móvil</button>
         <button class="btn sm" id="bSim"><svg class="i"><use href="#i-sim"/></svg>Simular</button>
       </div>
+      <div class="opts">
+        <label>Velocidad del puerto USB <select id="baud" class="sel inp"><option>9600</option><option>38400</option><option>115200</option><option>230400</option><option>460800</option></select></label>
+        <span style="font-size:12px">Solo para adaptadores serie (FTDI, CH340, PL2303…)</span>
+      </div>
       <div class="ch" style="margin:16px 0 12px"><h2>Marcar rodando</h2><span>Al pasar por el punto</span></div>
       <div class="g2">
         <button class="btn sm acc" id="bLine"><svg class="i"><use href="#i-flag"/></svg>Meta aquí</button>
         <button class="btn sm blue" id="bSecHere"><svg class="i"><use href="#i-split"/></svg>Parcial aquí</button>
       </div>
+    </section>
+
+    <section class="card">
+      <div class="ch"><h2>Inclinación</h2><span id="imuStat">Desactivada</span></div>
+      <div class="field"><select id="imuMode" class="inp">
+        <option value="off">Desactivada</option>
+        <option value="gps">Solo GPS · estimación por trazada</option>
+        <option value="phone">Opción A · sensores del móvil (IMU interna)</option>
+        <option value="racebox">Opción B · RaceBox Mini / Mini S / Micro (Bluetooth)</option>
+        <option value="navisys">Opción C · NaviSys GR-8018U (USB · GPS 50 Hz + IMU)</option>
+      </select></div>
+      <p class="hint" id="imuHelp" hidden></p>
+      <div class="g2" id="imuBtns" hidden>
+        <button class="btn sm blue" id="bImuConn"><svg class="i"><use href="#i-gauge"/></svg><span id="bImuConnTxt">Activar sensores</span></button>
+        <button class="btn sm acc" id="bCalib"><svg class="i"><use href="#i-target"/></svg>Calibrar montaje</button>
+      </div>
+      <div class="opts" id="imuOpts" hidden>
+        <label>Filtro de vibraciones <select id="imuFilt" class="sel inp"><option value="low">Bajo</option><option value="med">Medio</option><option value="high">Alto</option></select></label>
+        <label class="chk"><input type="checkbox" id="imuInv">Invertir izquierda/derecha</label>
+      </div>
+      <div class="opts" id="navOpts" hidden>
+        <label>Frecuencia <select id="navHz" class="sel inp"><option value="25">25 Hz</option><option value="50">50 Hz (GPS + sensores)</option></select></label>
+        <label class="chk"><input type="checkbox" id="navSave">Guardar en el receptor</label>
+        <button class="btn sm" id="bNavCfg"><svg class="i"><use href="#i-target"/></svg>Configurar receptor</button>
+      </div>
+      <div class="steps" id="imuSteps"></div>
     </section>
 
     <section class="card">
@@ -306,9 +375,12 @@ details.help li{margin-bottom:6px}
         <tbody id="laps"></tbody>
       </table>
       <div class="g2" style="margin-top:12px">
-        <button class="btn sm" id="bCsv"><svg class="i"><use href="#i-down"/></svg>CSV</button>
+        <button class="btn sm" id="bCsv"><svg class="i"><use href="#i-down"/></svg>Vueltas</button>
         <button class="btn sm" id="bGpx"><svg class="i"><use href="#i-down"/></svg>GPX (mapas)</button>
+        <button class="btn sm" id="bTeleG"><svg class="i"><use href="#i-down"/></svg>Telemetría GPS</button>
+        <button class="btn sm" id="bTeleI"><svg class="i"><use href="#i-down"/></svg>Telemetría IMU</button>
       </div>
+      <div class="msg" id="teleInfo" style="margin-top:8px"></div>
     </section>
   </div>
 
@@ -355,6 +427,8 @@ details.help li{margin-bottom:6px}
           <li><b>Empezar</b> arranca la tanda: la primera vuelta cuenta desde el primer paso por meta.</li>
           <li><b>Parar</b> pone la tanda en pausa (por ejemplo, en boxes): la vuelta en curso no cuenta. <b>Reanudar</b> sigue en el próximo paso por meta.</li>
           <li><b>Finalizar</b> cierra la tanda y la guarda en el historial.</li>
+          <li><b>Inclinación:</b> elige el modo en su tarjeta. Opción A (sensores del móvil): móvil fijo en soporte rígido, pulsa <b>Calibrar montaje</b> con la moto recta y parada y luego acelera y frena en una recta. Opción B (RaceBox por Bluetooth): igual, pero el aparato va atornillado a la moto. Opción C (NaviSys GR-8018U por USB): la app configura sola el receptor al conectarlo; después se calibra igual.</li>
+          <li><b>Telemetría:</b> mientras la tanda está en marcha se graba todo (GPS, inclinación, fuerzas G y sensores) y se guarda en el móvil cada 2 segundos. Se exporta con <b>Telemetría GPS</b> y <b>Telemetría IMU</b>; ambos archivos comparten la misma escala de tiempo.</li>
           <li>Parciales: <b style="color:var(--pb)">morado</b> = mejor de la tanda, <b style="color:var(--acc)">amarillo</b> = más lento. <b>Ideal</b> = suma de tus mejores parciales.</li>
         </ol>
       </details>
@@ -542,6 +616,7 @@ function onSample(s){
     S.lastSpd = spd;
     if(s.hdg!=null && isFinite(s.hdg) && spd>2) S.lastHeading = s.hdg;
     else if(d > 0.5) S.lastHeading = (Math.atan2(dx,dy)*180/Math.PI + 360) % 360;
+    imuGps(s, p, spd); imuTimeSync(s.t);
 
     const circ = C.cur;
     let crossed = false;
@@ -585,6 +660,11 @@ function onSample(s){
       if(S.lapStart!=null) S.lapSamples.push([S.lapDist, p.t - S.lapStart]);
     }
     S.lapVmax = Math.max(S.lapVmax, spd*3.6);
+    if(S.run === 'running' && S.lapStart != null && IMU.mode !== 'off' && spd > 5){
+      const lv = leanOut(); if(lv > S.lapLeanR) S.lapLeanR = lv; if(-lv > S.lapLeanL) S.lapLeanL = -lv;
+      S.lapBrake = Math.max(S.lapBrake || 0, -GF.long); S.lapAcc = Math.max(S.lapAcc || 0, GF.long); S.lapLat = Math.max(S.lapLat || 0, Math.abs(GF.lat));
+    }
+    tlGps(s, spd);
     S.delta = null;
     if(S.lapStart!=null && S.bestIdx>=0){
       const bt = timeAt(S.laps[S.bestIdx].samples, S.lapDist);
@@ -592,11 +672,11 @@ function onSample(s){
     }
   }
   S.prev = p;
-  if(S.gpx.length < 400000) S.gpx.push([s.lat, s.lon, s.t]);
+  if(S.gpx.length < 400000) S.gpx.push([s.lat, s.lon, s.t, S.lastSpd, IMU.mode !== 'off' ? leanOut() : null]);
   S.mapBuf.push([s.lat, s.lon]);
 }
 function startLap(tc, rem, pt){
-  S.lapStart = tc; S.lapDist = rem; S.lapVmax = 0;
+  S.lapStart = tc; S.lapDist = rem; S.lapVmax = 0; S.lapLeanL = 0; S.lapLeanR = 0; S.lapBrake = 0; S.lapAcc = 0; S.lapLat = 0;
   S.lapSamples = [[0,0],[rem, pt-tc]]; S.splits = []; S.curSecs = [];
   Map_.newLap();
 }
@@ -607,7 +687,9 @@ function sectorDone(i, t){
   flashMsg(fmtS(t), 'PARCIAL ' + (i+1), bs==null ? 'Primer parcial' : fmtD(t-bs), bs==null ? null : t-bs, '', 1600);
 }
 function addLap(time, vmax, samples, secs){
-  const lap = {n:S.laps.length+1, time, vmax, samples, secs};
+  const lap = {n:S.laps.length+1, time, vmax, samples, secs,
+    leanL: IMU.mode !== 'off' ? Math.round(S.lapLeanL||0) : null, leanR: IMU.mode !== 'off' ? Math.round(S.lapLeanR||0) : null,
+    brakeG: IMU.mode !== 'off' ? Math.round((S.lapBrake||0)*100)/100 : null, accG: IMU.mode !== 'off' ? Math.round((S.lapAcc||0)*100)/100 : null, latG: IMU.mode !== 'off' ? Math.round((S.lapLat||0)*100)/100 : null};
   const prevBest = S.bestIdx>=0 ? S.laps[S.bestIdx] : null;
   const delta = prevBest ? time - prevBest.time : null;
   S.laps.push(lap);
@@ -630,14 +712,19 @@ async function ensureSource(){
   if(S.srcName) return true;
   const can = ('serial' in navigator) || !!navigator.usb;
   const pref = load('lt_src') || (can ? 'usb' : 'phone');
-  if(pref === 'usb' && can) await startUsb();
+  if(IMU.mode === 'navisys' && can) await startUsb();
+  else if(pref === 'racebox' && navigator.bluetooth) await startRaceBox();
+  else if(pref === 'usb' && can) await startUsb();
   else if(pref === 'sim') await startSim();
   else await startPhone();
   return !!S.srcName;
 }
 $('cStart').onclick = async () => {
+  if(IMU.mode === 'phone' && !imuLive()) startPhoneImu(true);
+  if(IMU.mode === 'racebox' && S.srcName !== 'RaceBox') await startRaceBox();
   if(!(await ensureSource())){ msg('Sin GPS: elige una fuente en "Fuente GPS".'); return; }
   const resumed = S.run === 'paused';
+  if(!resumed) await tlStart();
   S.run = 'running'; S.sessStart = nowT(); cancelLap();
   updateCtrl(); wake();
   if(!C.cur?.finish) msg('Tanda en marcha, pero falta la meta: márcala en el mapa o con "Meta aquí".');
@@ -654,7 +741,7 @@ function finishSession(){
   if(S.laps.length){
     const best = S.laps[S.bestIdx].time, ideal = idealOf(S.laps);
     HIST.unshift({id:Date.now(), date:Date.now(), circ: C.cur ? C.cur.name : '—', dur, best, ideal,
-      laps: S.laps.map(l => ({n:l.n, time:l.time, vmax:l.vmax, secs:l.secs}))});
+      laps: S.laps.map(l => ({n:l.n, time:l.time, vmax:l.vmax, secs:l.secs, leanL:l.leanL ?? null, leanR:l.leanR ?? null, brakeG:l.brakeG ?? null, accG:l.accG ?? null, latG:l.latG ?? null}))});
     HIST = HIST.slice(0, 200); DB.addHist(HIST[0]);
     flashMsg(fmt(best), 'TANDA TERMINADA', S.laps.length + (S.laps.length===1 ? ' vuelta' : ' vueltas'), null,
       'Duración ' + fmtDur(dur) + (ideal ? ' · Ideal ' + fmt(ideal) : ''), 5000);
@@ -662,6 +749,7 @@ function finishSession(){
   S.lastGpx = S.gpx; S.gpx = [];
   S.laps = []; S.bestIdx = -1; S.run = 'idle'; S.sessAcc = 0; S.sessStart = null; cancelLap();
   saveSession(); Map_.clearTrack(); stop(); renderLaps(); renderHist(); updateCtrl();
+  tlFlush().then(tlInfo);
 }
 
 /* ---------- circuitos ---------- */
@@ -831,7 +919,10 @@ function lapRows(laps, nS){
   const best = Math.min(...laps.map(l => l.time)), bs = bestSectors(nS, laps);
   return laps.slice().reverse().map(l => {
     const isB = l.time === best;
-    const sl = l.secs ? '<div class="sl">' + l.secs.map((s,i) => `<span class="${nS===l.secs.length && s===bs[i]?'pb':''}">S${i+1} ${fmtS(s)}</span>`).join(' · ') + '</div>' : '';
+    const parts = [];
+    if(l.secs) parts.push(l.secs.map((s,i) => `<span class="${nS===l.secs.length && s===bs[i]?'pb':''}">S${i+1} ${fmtS(s)}</span>`).join(' · '));
+    if(l.leanR != null) parts.push(`Incl. I ${l.leanL}° · D ${l.leanR}°` + (l.brakeG != null ? ` · Frenada ${l.brakeG.toFixed(2)} g · Lateral ${l.latG.toFixed(2)} g` : ''));
+    const sl = parts.length ? '<div class="sl">' + parts.join('<br>') + '</div>' : '';
     return `<tr class="${isB?'best':''}"><td>${l.n}${isB?' ★':''}</td><td>${fmt(l.time)}${sl}</td><td>${isB?'—':fmtD(l.time-best)}</td><td>${Math.round(l.vmax)}</td></tr>`;
   }).join('');
 }
@@ -912,6 +1003,8 @@ function frame(now){
   if(S.sats!=null) fi = ' · ' + S.sats + ' sat';
   else if(S.acc!=null) fi = ' · ±' + Math.round(S.acc) + ' m';
   if(live) hp.textContent = hz + ' Hz' + fi;
+  renderLean(); renderG(); if(now - lastMap > 300) imuSteps();
+  if(now - TL.lastFlush > 2000){ TL.lastFlush = now; tlFlush(); }
   if(now - lastMap > 500){ lastMap = now; Map_.flush(); }
 }
 
@@ -919,7 +1012,7 @@ function frame(now){
 function saveSession(){ store(K('lt_session'), {laps:S.laps, bestIdx:S.bestIdx}); }
 function resetLive(){
   S.origin=null; S.prev=null; cancelLap(); S.lapDist=0;
-  S.hzT=[]; S.sats=null; S.hdop=null; S.acc=null; S.lastSpd=0; S.detected=false; S.mapBuf=[];
+  S.ubxSeen=false; S.hzT=[]; S.sats=null; S.hdop=null; S.acc=null; S.lastSpd=0; S.detected=false; S.mapBuf=[];
 }
 function download(name, text, type){
   const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], {type}));
@@ -928,16 +1021,17 @@ function download(name, text, type){
 const stamp = () => new Date().toISOString().slice(0,16).replace(/[:T]/g,'-');
 function csvFor(laps){
   const best = Math.min(...laps.map(l => l.time)), ns = Math.max(0, ...laps.map(l => l.secs ? l.secs.length : 0));
-  const head = ['vuelta','tiempo','segundos','diferencia_mejor','vmax_kmh'].concat(Array.from({length:ns}, (_,i) => 'S' + (i+1)));
-  return [head.join(';')].concat(laps.map(l => [l.n, fmt(l.time), (l.time/1000).toFixed(3), ((l.time-best)/1000).toFixed(3), Math.round(l.vmax)]
+  const head = ['vuelta','tiempo','segundos','diferencia_mejor','vmax_kmh','incl_max_izq','incl_max_der','g_frenada_max','g_aceleracion_max','g_lateral_max'].concat(Array.from({length:ns}, (_,i) => 'S' + (i+1)));
+  return [head.join(';')].concat(laps.map(l => [l.n, fmt(l.time), (l.time/1000).toFixed(3), ((l.time-best)/1000).toFixed(3), Math.round(l.vmax), l.leanL ?? '', l.leanR ?? '', l.brakeG ?? '', l.accG ?? '', l.latG ?? '']
     .concat(Array.from({length:ns}, (_,i) => l.secs && l.secs[i]!=null ? (l.secs[i]/1000).toFixed(3) : '')).join(';'))).join('\n');
 }
 $('bCsv').onclick = () => {
   if(!S.laps.length){ msg('No hay vueltas en la tanda actual. Las tandas terminadas se exportan desde el historial.'); return; }
   download('tanda_' + stamp() + '.csv', csvFor(S.laps), 'text/csv');
 };
-$('bGpx').onclick = () => {
-  const data = S.gpx.length > 1 ? S.gpx : S.lastGpx;
+$('bGpx').onclick = async () => {
+  const T = await tlReadAll();
+  const data = T.g.length > 1 ? T.g.map(r => [r[1], r[2], r[0]]) : (S.gpx.length > 1 ? S.gpx : S.lastGpx);
   if(!data || data.length < 2){ msg('Aún no hay trazado grabado.'); return; }
   const wpt = [];
   if(C.cur?.finish){ const f = C.cur.finish; wpt.push(`<wpt lat="${(f.a[0]+f.b[0])/2}" lon="${(f.a[1]+f.b[1])/2}"><name>META</name></wpt>`); }
@@ -1009,7 +1103,7 @@ function nmea(line){
   if(parseInt(line.slice(star+1, star+3), 16) !== cs) return;
   const f = line.slice(1, star).split(','), type = f[0].slice(2);
   if(type === 'GGA'){ S.sats = +f[7] || 0; S.hdop = f[8] || null; }
-  else if(type === 'RMC'){
+  else if(type === 'RMC' && !S.ubxSeen){
     if(f[2] !== 'A'){ msg('Receptor conectado. Buscando satélites… (ponlo con vista al cielo)'); return; }
     onSample({t:nmeaTime(f[1], f[9]), lat:dm(f[3],f[4]), lon:dm(f[5],f[6]), spd: f[7] ? +f[7]*0.514444 : null, hdg: f[8]!=='' ? +f[8] : null});
   }
@@ -1025,12 +1119,12 @@ function nmeaTime(hms, dmy){
 }
 
 async function startUsb(){
-  await stop(); nbuf = '';
+  await stop(); nbuf = ''; rbuf = new Uint8Array(0); S.ubxSeen = false; UBXS.pvt = 0; UBXS.esf = 0; UBXS.att = 0; IMU.rxCfg = false;
   try{
     if('serial' in navigator){
       try{
         const port = await navigator.serial.requestPort();
-        await port.open({baudRate:115200});
+        await port.open({baudRate: portBaud(), bufferSize: 65536});
         usbStarted('Web Serial'); readSerial(port); return;
       }catch(e){ if(e.name === 'NotFoundError' && !navigator.usb) throw e; if(e.name !== 'NotFoundError') console.warn(e); }
     }
@@ -1042,42 +1136,51 @@ async function startUsb(){
     else msg('Error USB: ' + e.message);
   }
 }
-function usbStarted(how){ setSrc('GPS USB'); store('lt_src', 'usb'); wake(); msg('Receptor conectado (' + how + '). Esperando datos…'); }
+function usbStarted(how){
+  setSrc('GPS USB'); store('lt_src', 'usb'); wake(); msg('Receptor conectado (' + how + '). Esperando datos…'); renderImu();
+  if(IMU.mode === 'navisys') setTimeout(() => { if(S.srcName === 'GPS USB') navisysConfig(); }, 900);
+}
 async function readSerial(port){
-  const reader = port.readable.getReader(), dec = new TextDecoder();
-  stopFn = async () => { try{ await reader.cancel(); }catch(e){} try{ reader.releaseLock(); await port.close(); }catch(e){} };
-  try{ for(;;){ const {value, done} = await reader.read(); if(done) break; feed(dec.decode(value, {stream:true})); } }
+  const reader = port.readable.getReader();
+  let writer = null; try{ writer = port.writable.getWriter(); USBIO.write = b => writer.write(b); }catch(e){ USBIO.write = null; }
+  stopFn = async () => { USBIO.write = null; try{ await reader.cancel(); }catch(e){} try{ reader.releaseLock(); if(writer) writer.releaseLock(); await port.close(); }catch(e){} };
+  try{ for(;;){ const {value, done} = await reader.read(); if(done) break; if(value && value.length) feedBytes(value); } }
   catch(e){ msg('Receptor desconectado: ' + e.message); }
 }
 async function openUsb(dev){
   await dev.open();
   if(dev.configuration === null) await dev.selectConfiguration(1);
-  let ctrlIf = null, dataIf = null, inEp = null;
+  let ctrlIf = null, dataIf = null, inEp = null, outEp = null, pkt = 64;
   for(const intf of dev.configuration.interfaces){
     const alt = intf.alternates[0];
     if(alt.interfaceClass === 2 && ctrlIf === null) ctrlIf = intf.interfaceNumber;
     const ep = alt.endpoints.find(e => e.direction === 'in' && e.type === 'bulk');
-    if(ep && dataIf === null){ dataIf = intf.interfaceNumber; inEp = ep.endpointNumber; }
+    if(ep && dataIf === null){
+      dataIf = intf.interfaceNumber; inEp = ep.endpointNumber; pkt = ep.packetSize || 64;
+      const eo = alt.endpoints.find(e => e.direction === 'out' && e.type === 'bulk'); outEp = eo ? eo.endpointNumber : null;
+    }
   }
   if(dataIf === null) throw new Error('el receptor no tiene un canal de datos reconocible');
   if(ctrlIf !== null){ try{ await dev.claimInterface(ctrlIf); }catch(e){} }
   await dev.claimInterface(dataIf);
-  const baud = new Uint8Array(4); new DataView(baud.buffer).setUint32(0, 115200, true);
-  try{
-    if(ctrlIf !== null){
-      await dev.controlTransferOut({requestType:'class', recipient:'interface', request:0x20, value:0, index:ctrlIf}, new Uint8Array([...baud, 0, 0, 8]));
-      await dev.controlTransferOut({requestType:'class', recipient:'interface', request:0x22, value:0x03, index:ctrlIf});
-    } else if(dev.vendorId === 0x10C4){
-      await dev.controlTransferOut({requestType:'vendor', recipient:'interface', request:0x00, value:0x0001, index:dataIf});
-      await dev.controlTransferOut({requestType:'vendor', recipient:'interface', request:0x1E, value:0, index:dataIf}, baud);
-    }
-  }catch(e){ console.warn('init', e); }
-  let alive = true; const dec = new TextDecoder();
-  stopFn = async () => { alive = false; try{ await dev.close(); }catch(e){} };
-  usbStarted((dev.productName || 'USB') + ' · ' + dev.vendorId.toString(16) + ':' + dev.productId.toString(16));
+  let chip = 'USB';
+  try{ chip = await usbChipInit(dev, ctrlIf, dataIf, portBaud()); }catch(e){ console.warn('init', e); }
+  USBIO.chip = chip;
+  USBIO.write = outEp != null ? (bytes => dev.transferOut(outEp, bytes)) : null;
+  let alive = true;
+  stopFn = async () => { alive = false; USBIO.write = null; try{ await dev.close(); }catch(e){} };
+  usbStarted((dev.productName || 'USB') + ' · ' + chip + ' · ' + dev.vendorId.toString(16) + ':' + dev.productId.toString(16));
   (async () => {
-    try{ while(alive){ const r = await dev.transferIn(inEp, 512); if(r.data && r.data.byteLength) feed(dec.decode(r.data, {stream:true})); } }
-    catch(e){ if(alive) msg('Receptor desconectado: ' + e.message); }
+    try{
+      while(alive){
+        const r = await dev.transferIn(inEp, Math.max(512, pkt));
+        if(r.data && r.data.byteLength){
+          let u = new Uint8Array(r.data.buffer, r.data.byteOffset, r.data.byteLength);
+          if(chip === 'FTDI') u = ftdiStrip(u, pkt);
+          if(u.length) feedBytes(u);
+        }
+      }
+    }catch(e){ if(alive) msg('Receptor desconectado: ' + e.message); }
   })();
 }
 if(navigator.usb) navigator.usb.addEventListener('disconnect', () => { if(S.srcName === 'GPS USB'){ stop(); msg('Receptor USB desconectado.'); } });
@@ -1091,9 +1194,14 @@ async function startSim(){
   C.saved = C.cur;
   selectCircuit({temp:true, name:'Simulación', center:[lat0, lon0], finish:lineTh(0), sectors:[lineTh(2.1), lineTh(4.2)]}, true);
   S.detected = true; S.rate = 4;
-  let th = 0.05, simT = Date.now(), lapF = 1;
+  let th = 0.05, simT = Date.now(), lapF = 1, simV = 30;
   const iv = setInterval(() => {
-    const dt = 0.04, v = (34 + 16*Math.sin(3*th + 1)) * lapF;
+    const dt = 0.04;
+    const c0 = pos(th-0.02), c1 = pos(th), c2 = pos(th+0.02);
+    const ax = c1.x-c0.x, ay = c1.y-c0.y, bx = c2.x-c1.x, by = c2.y-c1.y, cx = c2.x-c0.x, cy = c2.y-c0.y;
+    const R = Math.hypot(ax,ay)*Math.hypot(bx,by)*Math.hypot(cx,cy) / (2*Math.abs(ax*by-ay*bx) || 1e-9);
+    const vT = Math.min(52, Math.sqrt(9.81*R*Math.tan(46*Math.PI/180))) * lapF;
+    simV += Math.max(-9*dt, Math.min(5*dt, vT - simV)); const v = simV;
     const a = pos(th), b = pos(th + 0.001), ds = Math.hypot(b.x-a.x, b.y-a.y)/0.001;
     const thPrev = th; th += v*dt/ds; simT += dt*1000;
     if(Math.floor(th/(2*Math.PI)) > Math.floor(thPrev/(2*Math.PI))) lapF = 0.95 + Math.random()*0.1;
@@ -1105,6 +1213,525 @@ async function startSim(){
   setSrc('Simulación'); store('lt_src', 'sim');
   msg('Simulación a 25 Hz (x4 de velocidad) con meta y 2 parciales. Pulsa Empezar.');
 }
+
+/* ---------- Opción C: receptores u-blox por USB (NaviSys GR-8018U) ---------- */
+const HW = m => m === 'phone' || m === 'racebox' || m === 'navisys';
+const portBaud = () => +($('baud').value) || 115200;
+const USBIO = { write:null, chip:'' };
+const UBXS = { pvt:0, esf:0, att:0, acks:[] };
+const GF = { long:0, lat:0 };
+
+// flujo de bytes mixto: NMEA (texto) + UBX (binario)
+let rbuf = new Uint8Array(0);
+function feedBytes(u8){
+  let b = u8;
+  if(rbuf.length){ b = new Uint8Array(rbuf.length + u8.length); b.set(rbuf); b.set(u8, rbuf.length); }
+  let i = 0;
+  while(i < b.length){
+    const c = b[i];
+    if(c === 0xB5){
+      if(b.length - i < 6) break;
+      if(b[i+1] !== 0x62){ i++; continue; }
+      const len = b[i+4] | (b[i+5] << 8);
+      if(len > 4096){ i++; continue; }
+      if(b.length - i < len + 8) break;
+      let ca = 0, cb = 0;
+      for(let k = i+2; k < i+6+len; k++){ ca = (ca + b[k]) & 255; cb = (cb + ca) & 255; }
+      if(ca === b[i+6+len] && cb === b[i+7+len]){
+        try{ ubxMsg(b[i+2], b[i+3], new DataView(b.buffer, b.byteOffset + i + 6, len), len); }catch(e){ console.warn(e); }
+        i += len + 8;
+      } else i++;
+    } else if(c === 0x24){
+      const lim = Math.min(b.length, i + 120); let j = i + 1;
+      while(j < lim && b[j] !== 0x0A) j++;
+      if(j < lim){ let s = ''; for(let k = i; k < j; k++) s += String.fromCharCode(b[k]); nmea(s.trim()); i = j + 1; }
+      else if(b.length - i < 120) break;
+      else i++;
+    } else i++;
+  }
+  rbuf = b.slice(i); if(rbuf.length > 16384) rbuf = new Uint8Array(0);
+}
+function ubxMsg(cls, id, d, len){
+  if(cls === 0x01 && id === 0x07 && len >= 92){                       // NAV-PVT
+    S.ubxSeen = true; UBXS.pvt++;
+    const fix = d.getUint8(20), ok = d.getUint8(21) & 1;
+    S.sats = d.getUint8(23); S.hdop = (d.getUint16(76, true)/100).toFixed(1);
+    if(!ok || (fix !== 3 && fix !== 4)){ if(!S.prev) msg('Receptor u-blox conectado. Buscando satélites… (ponlo con vista al cielo)'); return; }
+    const t = Date.UTC(d.getUint16(4,true), d.getUint8(6)-1, d.getUint8(7), d.getUint8(8), d.getUint8(9), d.getUint8(10)) + d.getInt32(16,true)/1e6;
+    onSample({t, lat:d.getInt32(28,true)/1e7, lon:d.getInt32(24,true)/1e7, spd:d.getInt32(60,true)/1000, hdg:d.getInt32(64,true)/1e5});
+  } else if(cls === 0x10 && id === 0x03 && len >= 12){                // ESF-RAW
+    esfRaw(d, len);
+  } else if(cls === 0x01 && id === 0x05 && len >= 32){                // NAV-ATT
+    UBXS.att++; IMU.rxRoll = d.getInt32(8,true)/1e5; IMU.rxPitch = d.getInt32(12,true)/1e5;
+  } else if(cls === 0x05 && len >= 2 && d.getUint8(0) === 0x06 && d.getUint8(1) === 0x8A){   // ACK de CFG-VALSET
+    UBXS.acks.push(id === 0x01);
+  }
+}
+let esfLastT = 0, esfPeriod = 10;
+function esfRaw(d, len){
+  const n = Math.floor((len - 4)/8), sets = new Map();
+  for(let k = 0; k < n; k++){
+    const o = 4 + k*8, w = d.getUint32(o, true), tag = d.getUint32(o+4, true);
+    const type = (w >>> 24) & 0x3F; let v = w & 0xFFFFFF; if(v & 0x800000) v -= 0x1000000;
+    let s = sets.get(tag); if(!s){ s = {a:[null,null,null], g:[null,null,null]}; sets.set(tag, s); }
+    if(type === 14) s.g[0] = v/4096; else if(type === 13) s.g[1] = v/4096; else if(type === 5) s.g[2] = v/4096;
+    else if(type === 16) s.a[0] = v/1024; else if(type === 17) s.a[1] = v/1024; else if(type === 18) s.a[2] = v/1024;
+  }
+  const list = [...sets.values()].filter(s => s.a.every(x => x != null) && s.g.every(x => x != null));
+  if(!list.length) return;
+  UBXS.esf += list.length;
+  const now = performance.now();
+  if(esfLastT){ const per = (now - esfLastT)/list.length; if(per > 1 && per < 100) esfPeriod += (per - esfPeriod)*0.1; }
+  esfLastT = now;
+  list.forEach((s, i) => imuMotion(s.a, s.g, now - (list.length - 1 - i)*esfPeriod));
+}
+
+// configuración del receptor (UBX-CFG-VALSET, por grupos para que un fallo no bloquee el resto)
+function ubxFrame(cls, id, payload){
+  const n = payload.length, b = new Uint8Array(n + 8);
+  b[0] = 0xB5; b[1] = 0x62; b[2] = cls; b[3] = id; b[4] = n & 255; b[5] = n >> 8; b.set(payload, 6);
+  let a = 0, c = 0; for(let k = 2; k < 6 + n; k++){ a = (a + b[k]) & 255; c = (c + a) & 255; }
+  b[6+n] = a; b[7+n] = c; return b;
+}
+function valset(pairs, layers){
+  const bytes = [0, layers, 0, 0];
+  for(const [key, val] of pairs){
+    for(let i = 0; i < 4; i++) bytes.push((key >>> (8*i)) & 255);
+    const sz = (key >>> 28) & 7, n = sz <= 2 ? 1 : sz === 3 ? 2 : sz === 4 ? 4 : 8;
+    for(let i = 0; i < n; i++) bytes.push(i < 4 ? (val >>> (8*i)) & 255 : 0);
+  }
+  return ubxFrame(0x06, 0x8A, new Uint8Array(bytes));
+}
+const CK = { MEAS:0x30210001, NAV:0x30210002, PRIO:0x20210004, USE_SF:0x10080001,
+  PVT_U1:0x20910007, PVT_USB:0x20910009, RAW_U1:0x209102a0, RAW_USB:0x209102a2, ATT_U1:0x20910020, ATT_USB:0x20910022,
+  USB_UBX:0x10780001, USB_NMEA:0x10780002, U1_UBX:0x10740001, U1_NMEA:0x10740002 };
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+async function navisysConfig(){
+  if(!USBIO.write){ msg('Conecta primero el receptor por USB.'); return; }
+  const hz = +$('navHz').value, layers = $('navSave').checked ? 7 : 1;
+  const groups = [
+    ['protocolo UBX', [[CK.USB_UBX,1],[CK.U1_UBX,1]]],
+    ['frecuencia ' + hz + ' Hz', [[CK.MEAS,40],[CK.NAV,1],[CK.PRIO, hz > 25 ? hz : 0]]],
+    ['posición (NAV-PVT)', [[CK.PVT_USB,1],[CK.PVT_U1,1]]],
+    ['sensores (ESF-RAW)', [[CK.USE_SF,1],[CK.RAW_USB,1],[CK.RAW_U1,1]]],
+    ['actitud (NAV-ATT)', [[CK.ATT_USB,1],[CK.ATT_U1,1]]]
+  ];
+  $('bNavCfg').disabled = true; msg('Configurando el receptor…');
+  const res = [];
+  try{
+    for(const [name, pairs] of groups){
+      const before = UBXS.acks.length;
+      await USBIO.write(valset(pairs, layers));
+      for(let w = 0; w < 10 && UBXS.acks.length === before; w++) await sleep(60);
+      res.push([name, UBXS.acks.length > before ? UBXS.acks[UBXS.acks.length-1] : null]);
+    }
+    const pvtOk = res[2][1] === true;
+    if(pvtOk){   // con UBX funcionando, se apaga NMEA para no saturar el puerto
+      const before = UBXS.acks.length;
+      await USBIO.write(valset([[CK.USB_NMEA,0],[CK.U1_NMEA,0]], layers));
+      for(let w = 0; w < 10 && UBXS.acks.length === before; w++) await sleep(60);
+    }
+  }catch(e){ msg('No se pudo escribir en el receptor: ' + e.message); $('bNavCfg').disabled = false; return; }
+  $('bNavCfg').disabled = false;
+  if(res.every(r => r[1] === null)){ IMU.rxCfg = false; msg('El receptor no respondió a la configuración. Si da posición, funcionará solo por NMEA (sin sensores).'); return; }
+  IMU.rxCfg = res[2][1] === true && res[3][1] === true;
+  const bad = res.filter(r => r[1] !== true).map(r => r[0]);
+  msg(bad.length ? 'Receptor configurado, salvo: ' + bad.join(', ') + '.' + (bad.some(b => b.startsWith('frecuencia')) ? ' Prueba con 25 Hz.' : '')
+                 : 'Receptor configurado ✓ (UBX, ' + hz + ' Hz, posición + sensores).');
+  renderImu();
+}
+
+// chips USB-serie
+function ftdiDiv(b){
+  const d8 = Math.round(3000000*8/b), int = d8 >> 3, code = [0,3,2,4,1,5,6,7][d8 & 7];
+  return {v: (int | ((code & 3) << 14)) & 0xFFFF, i: code >> 2};
+}
+function ftdiStrip(u, pkt){
+  const out = []; for(let o = 0; o < u.length; o += pkt) for(let k = o + 2; k < Math.min(o + pkt, u.length); k++) out.push(u[k]);
+  return new Uint8Array(out);
+}
+const CH340_BAUD = {2400:[0xd901,0x0038], 4800:[0x6402,0x001f], 9600:[0xb202,0x0013], 19200:[0xd902,0x000d], 38400:[0x6403,0x000a], 115200:[0xcc03,0x0008]};
+async function usbChipInit(dev, ctrlIf, dataIf, bd){
+  const vid = dev.vendorId, baud = new Uint8Array(4); new DataView(baud.buffer).setUint32(0, bd, true);
+  const vOut = (req, value, index) => dev.controlTransferOut({requestType:'vendor', recipient:'device', request:req, value, index});
+  const vIn = (req, value, index, n) => dev.controlTransferIn({requestType:'vendor', recipient:'device', request:req, value, index}, n || 2).catch(() => null);
+  const lineCoding = async idx => {
+    await dev.controlTransferOut({requestType:'class', recipient:'interface', request:0x20, value:0, index:idx}, new Uint8Array([...baud, 0, 0, 8]));
+    await dev.controlTransferOut({requestType:'class', recipient:'interface', request:0x22, value:0x03, index:idx});
+  };
+  if(ctrlIf !== null){ await lineCoding(ctrlIf); return 'CDC'; }
+  if(vid === 0x10C4){
+    await dev.controlTransferOut({requestType:'vendor', recipient:'interface', request:0x00, value:0x0001, index:dataIf});
+    await dev.controlTransferOut({requestType:'vendor', recipient:'interface', request:0x1E, value:0, index:dataIf}, baud);
+    return 'CP210x';
+  }
+  if(vid === 0x0403){
+    const dv = ftdiDiv(bd);
+    await vOut(0x00, 0, 0); await vOut(0x03, dv.v, dv.i); await vOut(0x04, 0x0008, 0); await vOut(0x01, 0x0303, 0); await vOut(0x02, 0, 0);
+    return 'FTDI';
+  }
+  if(vid === 0x1A86){
+    const br = CH340_BAUD[bd] || CH340_BAUD[115200];
+    const setB = async () => { await vOut(0x9A, 0x1312, br[0]); await vOut(0x9A, 0x0F2C, br[1]); };
+    await vIn(0x5F, 0, 0); await vOut(0xA1, 0, 0); await setB(); await vIn(0x95, 0x2518, 0);
+    await vOut(0x9A, 0x2518, 0x0050); await vIn(0x95, 0x0706, 0); await vOut(0xA1, 0x501F, 0xD90A); await setB(); await vOut(0xA4, 0xFF9F, 0);
+    if(!CH340_BAUD[bd]) msg('El chip CH340 se ha abierto a 115200 baudios.');
+    return 'CH340';
+  }
+  if(vid === 0x067B){
+    const r = v => vIn(0x01, v, 0, 1), w = (v, i) => vOut(0x01, v, i);
+    await r(0x8484); await w(0x0404, 0); await r(0x8484); await r(0x8383); await r(0x8484); await w(0x0404, 1);
+    await r(0x8484); await r(0x8383); await w(0, 1); await w(1, 0); await w(2, 0x44);
+    await lineCoding(0);
+    return 'PL2303';
+  }
+  return 'USB';
+}
+
+/* ---------- fuerzas G ---------- */
+function gUpdate(){
+  const lg = imuFused() ? vdot(IMU.a, IMU.dev.fwd)/G : IMU.longAcc/G;
+  const lt = IMU.v > 3 ? IMU.v*IMU.yaw*D2R/G : 0;
+  const k = FILT[IMU.filter].out, cl = x => Math.max(-3, Math.min(3, x));
+  GF.long += (cl(lg) - GF.long)*k; GF.lat += (cl(lt) - GF.lat)*k;
+}
+function renderG(){
+  if(IMU.mode === 'off') return;
+  const live = S.prev && performance.now() - S.lastWall < 3000;
+  const br = live ? Math.max(0, -GF.long) : 0, ac = live ? Math.max(0, GF.long) : 0, la = live ? GF.lat : 0;
+  $('gBrake').textContent = br.toFixed(2) + ' g'; $('gAcc').textContent = ac.toFixed(2) + ' g';
+  $('gLat').textContent = Math.abs(la).toFixed(2) + ' g' + (Math.abs(la) >= 0.05 ? (la > 0 ? ' D' : ' I') : '');
+  $('gBrakeMax').textContent = 'máx ' + (S.lapBrake || 0).toFixed(2);
+  $('gAccMax').textContent = 'máx ' + (S.lapAcc || 0).toFixed(2);
+  $('gLatMax').textContent = 'máx ' + (S.lapLat || 0).toFixed(2);
+}
+
+/* ---------- telemetría: registro completo con guardado continuo en el móvil ---------- */
+const TL = { db:null, gps:[], imu:[], lastFlush:0, tOff:null };
+function tlOpen(){
+  if(TL.db) return Promise.resolve(TL.db);
+  return new Promise(res => {
+    try{
+      const r = indexedDB.open('jcb_telemetria', 1);
+      r.onupgradeneeded = () => { r.result.createObjectStore('chunks', {autoIncrement:true}); r.result.createObjectStore('meta'); };
+      r.onsuccess = () => { TL.db = r.result; res(TL.db); };
+      r.onerror = () => res(null);
+    }catch(e){ res(null); }
+  });
+}
+function idbDo(fn){
+  return new Promise(res => {
+    try{ const tx = TL.db.transaction(['chunks','meta'], 'readwrite'); fn(tx); tx.oncomplete = () => res(true); tx.onerror = tx.onabort = () => res(false); }
+    catch(e){ res(false); }
+  });
+}
+async function tlStart(){
+  TL.gps = []; TL.imu = [];
+  await tlOpen(); if(!TL.db) return;
+  await idbDo(tx => { tx.objectStore('chunks').clear(); tx.objectStore('meta').put({start:Date.now(), circ: C.cur ? C.cur.name : '', user: DB.user ? DB.user.uid : ''}, 'cur'); });
+  tlInfo();
+}
+function tlFlush(){
+  if(!TL.db || (!TL.gps.length && !TL.imu.length)) return Promise.resolve();
+  const g = TL.gps, i = TL.imu; TL.gps = []; TL.imu = [];
+  return idbDo(tx => tx.objectStore('chunks').add({g, i}));
+}
+async function tlReadAll(){
+  await tlOpen();
+  if(!TL.db) return {g:TL.gps, i:TL.imu, meta:null};
+  await tlFlush();
+  return new Promise(res => {
+    try{
+      const tx = TL.db.transaction(['chunks','meta'], 'readonly'); let chunks = [], meta = null;
+      tx.objectStore('chunks').getAll().onsuccess = e => chunks = e.target.result || [];
+      tx.objectStore('meta').get('cur').onsuccess = e => meta = e.target.result || null;
+      tx.oncomplete = () => { const g = [], i = []; for(const c of chunks){ for(const r of c.g) g.push(r); for(const r of c.i) i.push(r); } res({g, i, meta}); };
+      tx.onerror = () => res({g:[], i:[], meta:null});
+    }catch(e){ res({g:[], i:[], meta:null}); }
+  });
+}
+async function tlInfo(){
+  await tlOpen(); if(!TL.db){ $('teleInfo').textContent = ''; return; }
+  const tx = TL.db.transaction(['chunks','meta'], 'readonly');
+  let meta = null, n = 0;
+  tx.objectStore('meta').get('cur').onsuccess = e => meta = e.target.result || null;
+  tx.objectStore('chunks').count().onsuccess = e => n = e.target.result || 0;
+  tx.oncomplete = () => {
+    if(!meta || (DB.user && meta.user && meta.user !== DB.user.uid)){ $('teleInfo').textContent = ''; return; }
+    const d = new Date(meta.start);
+    $('teleInfo').textContent = (S.run === 'running' ? 'Grabando telemetría y guardándola en el móvil cada 2 s.' :
+      'Telemetría guardada en el móvil de la tanda del ' + d.toLocaleDateString('es-ES') + ' ' + d.toLocaleTimeString('es-ES', {hour:'2-digit', minute:'2-digit'}) + (meta.circ ? ' (' + meta.circ + ')' : '') + '. Se conserva hasta la próxima tanda.') + (n || S.run === 'running' ? '' : ' (sin datos)');
+  };
+}
+function imuTimeSync(gpsT){ const o = gpsT - performance.now(); TL.tOff = TL.tOff == null ? o : TL.tOff + (o - TL.tOff)*0.05; }
+const r3 = x => x == null || !isFinite(x) ? null : Math.round(x*1000)/1000;
+function tlGps(s, spd){
+  if(S.run !== 'running') return;
+  TL.gps.push([s.t, Math.round(s.lat*1e7)/1e7, Math.round(s.lon*1e7)/1e7, Math.round(spd*360)/100,
+    IMU.mode !== 'off' ? Math.round(leanOut()*10)/10 : null, r3(GF.long), r3(GF.lat), S.sats ?? null, IMU.rxRoll != null ? Math.round(IMU.rxRoll*10)/10 : null]);
+}
+function tlImu(acc, gyro, t){
+  if(S.run !== 'running') return;
+  const tt = TL.tOff != null ? t + TL.tOff : Date.now();
+  TL.imu.push([Math.round(tt*10)/10, r3(acc[0]/G), r3(acc[1]/G), r3(acc[2]/G),
+    Math.round(gyro[0]*100)/100, Math.round(gyro[1]*100)/100, Math.round(gyro[2]*100)/100, Math.round(leanOut()*10)/10, r3(GF.long), r3(GF.lat)]);
+}
+$('bTeleG').onclick = async () => {
+  const T = await tlReadAll();
+  if(T.g.length < 2){ msg('Aún no hay telemetría: se graba mientras la tanda está en marcha.'); return; }
+  const t0 = T.g[0][0];
+  const rows = ['tiempo_s;hora_utc;lat;lon;vel_kmh;inclinacion_grados;g_longitudinal;g_lateral;satelites;roll_receptor'].concat(
+    T.g.map(r => [((r[0]-t0)/1000).toFixed(3), new Date(r[0]).toISOString(), r[1], r[2], r[3], r[4] ?? '', r[5] ?? '', r[6] ?? '', r[7] ?? '', r[8] ?? ''].join(';')));
+  download('telemetria_gps_' + stamp() + '.csv', rows.join('\n'), 'text/csv');
+};
+$('bTeleI').onclick = async () => {
+  const T = await tlReadAll();
+  if(T.i.length < 2){ msg(HW(IMU.mode) ? 'Aún no hay datos de la IMU en esta tanda.' : 'La telemetría IMU necesita la opción A, B o C en la tarjeta de Inclinación.'); return; }
+  const t0 = T.g.length ? T.g[0][0] : T.i[0][0];
+  const rows = ['tiempo_s;hora_utc;acc_x_g;acc_y_g;acc_z_g;giro_x_dps;giro_y_dps;giro_z_dps;inclinacion_grados;g_longitudinal;g_lateral'].concat(
+    T.i.map(r => [((r[0]-t0)/1000).toFixed(3), new Date(r[0]).toISOString(), r[1], r[2], r[3], r[4], r[5], r[6], r[7], r[8] ?? '', r[9] ?? ''].join(';')));
+  download('telemetria_imu_' + stamp() + '.csv', rows.join('\n'), 'text/csv');
+};
+$('bNavCfg').onclick = navisysConfig;
+$('baud').value = load('lt_baud') || '115200';
+$('baud').onchange = e => store('lt_baud', e.target.value);
+$('navHz').value = load('lt_navhz') || '50';
+$('navHz').onchange = e => store('lt_navhz', e.target.value);
+
+/* ---------- inclinación (GPS / IMU del móvil / RaceBox / u-blox) ---------- */
+const G = 9.81, D2R = Math.PI/180;
+const vdot = (a,b) => a[0]*b[0] + a[1]*b[1] + a[2]*b[2];
+const vlen = a => Math.hypot(a[0], a[1], a[2]);
+const vnorm = a => { const l = vlen(a) || 1; return [a[0]/l, a[1]/l, a[2]/l]; };
+const FILT = { low:{k:.6, tau:.4, out:.5}, med:{k:.35, tau:.8, out:.3}, high:{k:.15, tau:1.5, out:.15} };
+const FWD_N = 120;
+const IMU = {
+  mode:'off', filter:'med', invert:false, dev:{},
+  lean:0, ref:0, prevRef:0, yaw:0, longAcc:0, v:0,
+  w:[0,0,0], a:[0,0,0], lastT:null, lastWall:0, hz:[], calib:null,
+  hist:[], lastCourse:null, lastCourseT:null, lastSpd:null, lastSpdT:null, corr:0, corrN:0, stopFn:null
+};
+const IMU_INFO = {
+  off:   {stat:'Desactivada', hint:'', conn:null},
+  gps:   {stat:'Solo GPS', conn:null,
+          hint:'Calcula la inclinación con la velocidad y la curvatura de la trazada. No necesita calibración. Va bien con el receptor de 25 Hz; con el GPS del móvil será poco precisa. No detecta derrapes ni cambios de inclinación muy rápidos.'},
+  phone: {stat:'IMU del móvil', conn:'Activar sensores',
+          hint:'Opción A. Usa el giroscopio y el acelerómetro del móvil junto al GPS. El móvil debe ir fijo en un soporte rígido, mejor con amortiguador antivibración. Paso 1: pulsa "Calibrar montaje" con la moto recta y parada. Paso 2: acelera y frena en una recta y la app aprende sola la dirección de marcha.'},
+  racebox:{stat:'RaceBox', conn:'Conectar por Bluetooth',
+          hint:'Opción B. RaceBox Mini, Mini S o Micro: GPS de 25 Hz e IMU en el mismo aparato, atornillado a la moto. Se conecta por Bluetooth y sustituye al receptor USB como fuente GPS. Se calibra igual que la opción A. Pendiente de probar con el dispositivo real.'},
+  navisys:{stat:'NaviSys GR-8018U', conn:'Conectar por USB',
+          hint:'Opción C. Receptor NaviSys GR-8018U (chip u-blox NEO-M9V): GPS de hasta 50 Hz con acelerómetro y giroscopio en la misma caja, por USB. Atorníllalo firme a la moto, con vista al cielo. Al conectarlo, la app lo configura sola en binario UBX: posición (NAV-PVT), sensores en bruto (ESF-RAW) y actitud (NAV-ATT). Después se calibra igual que la opción A. Si los datos se cortan, baja a 25 Hz. Pendiente de probar con el receptor real.'}
+};
+const leanOut = () => (IMU.invert ? -1 : 1) * IMU.lean;
+const imuLive = () => IMU.lastWall && performance.now() - IMU.lastWall < 1000;
+const imuFused = () => HW(IMU.mode) && IMU.dev.up && IMU.dev.fwd && imuLive();
+function newDev(){ return {up:null, fwd:null, fwdSum:[0,0,0], fwdN:0, gyroSign:1, signLocked:false}; }
+function imuLoad(){
+  const c = load('lt_imu') || {};
+  IMU.mode = c.mode || 'off'; IMU.filter = c.filter || 'med'; IMU.invert = !!c.invert;
+  IMU.dev = load('lt_imu_dev_' + IMU.mode) || newDev();
+  $('imuMode').value = IMU.mode; $('imuFilt').value = IMU.filter; $('imuInv').checked = IMU.invert;
+  renderImu();
+  if(IMU.mode === 'phone' && typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission !== 'function') startPhoneImu(true);
+}
+function imuSave(){
+  store('lt_imu', {mode:IMU.mode, filter:IMU.filter, invert:IMU.invert});
+  if(HW(IMU.mode)) store('lt_imu_dev_' + IMU.mode, IMU.dev);
+}
+function stopImu(){ if(IMU.stopFn){ try{ IMU.stopFn(); }catch(e){} } IMU.stopFn = null; IMU.lastWall = 0; }
+
+// llamada en cada muestra GPS: rumbo, giro, aceleración longitudinal e inclinación de referencia
+function imuGps(s, p, spd){
+  if(IMU.mode === 'off') return;
+  const now = p.t;
+  IMU.hist.push({x:p.x, y:p.y, t:now});
+  while(IMU.hist.length && now - IMU.hist[0].t > 900) IMU.hist.shift();
+  let course = null;
+  if(s.hdg != null && isFinite(s.hdg) && spd > 3) course = s.hdg;
+  else {
+    const o = IMU.hist[0];
+    if(o && now - o.t > 300 && Math.hypot(p.x-o.x, p.y-o.y) > 3) course = (Math.atan2(p.x-o.x, p.y-o.y)/D2R + 360) % 360;
+  }
+  if(course != null && IMU.lastCourse != null && now > IMU.lastCourseT){
+    const dh = ((course - IMU.lastCourse + 540) % 360) - 180, dt = now - IMU.lastCourseT;
+    IMU.yaw += (dh/(dt/1000) - IMU.yaw) * Math.min(1, dt/250);
+  }
+  if(course != null){ IMU.lastCourse = course; IMU.lastCourseT = now; }
+  if(IMU.lastSpdT != null && now > IMU.lastSpdT){
+    const dt = now - IMU.lastSpdT;
+    IMU.longAcc += ((spd - IMU.lastSpd)/(dt/1000) - IMU.longAcc) * Math.min(1, dt/300);
+  }
+  IMU.lastSpd = spd; IMU.lastSpdT = now; IMU.v = spd;
+  IMU.ref = spd > 4 ? Math.max(-65, Math.min(65, Math.atan(spd*IMU.yaw*D2R/G)/D2R)) : 0;
+  if(!imuFused()) IMU.lean += (IMU.ref - IMU.lean) * Math.min(1, FILT[IMU.filter].out*2);
+  gUpdate();
+}
+
+// llamada en cada muestra de la IMU (acelerómetro m/s² con gravedad, giroscopio °/s)
+function imuMotion(acc, gyro, t){
+  if(!HW(IMU.mode)) return;
+  const f = FILT[IMU.filter];
+  for(let i=0; i<3; i++){ IMU.a[i] += (acc[i] - IMU.a[i])*f.k; IMU.w[i] += (gyro[i] - IMU.w[i])*f.k; }
+  IMU.hz.push(t); while(IMU.hz.length && t - IMU.hz[0] >= 1000) IMU.hz.shift();
+  IMU.lastWall = performance.now();
+  tlImu(acc, gyro, t);
+  const dt = IMU.lastT == null ? 0 : Math.min(0.1, (t - IMU.lastT)/1000); IMU.lastT = t;
+  if(IMU.calib){ IMU.calib.push(acc.slice()); return; }
+  const d = IMU.dev; if(!d.up) return;
+  // paso 2: aprender la dirección de marcha acelerando/frenando en recta
+  if(!d.fwd && IMU.v > 5 && Math.abs(IMU.longAcc) > 1.2 && Math.abs(IMU.yaw) < 6 && performance.now() - S.lastWall < 1000){
+    const lin = [0,1,2].map(i => IMU.a[i] - G*d.up[i]), u = vdot(lin, d.up);
+    const h = [0,1,2].map(i => lin[i] - u*d.up[i]), sg = Math.sign(IMU.longAcc);
+    if(vlen(h) > 0.5){
+      for(let i=0; i<3; i++) d.fwdSum[i] += h[i]*sg;
+      if(++d.fwdN >= FWD_N){
+        let fw = vnorm(d.fwdSum); const u2 = vdot(fw, d.up);
+        d.fwd = vnorm([0,1,2].map(i => fw[i] - u2*d.up[i])); imuSave();
+        msg('Dirección de marcha aprendida ✓. Inclinación con IMU activa.');
+      }
+    }
+  }
+  if(d.fwd && dt > 0){
+    const pr = vdot(IMU.w, d.fwd);                 // giro de alabeo (°/s)
+    const dRef = IMU.ref - IMU.prevRef; IMU.prevRef = IMU.ref;
+    if(!d.signLocked && Math.abs(dRef) > 0.2){      // comprobación automática del sentido del giroscopio
+      IMU.corr += pr*dRef;
+      if(++IMU.corrN > 150){ d.gyroSign = IMU.corr >= 0 ? 1 : -1; d.signLocked = true; imuSave(); }
+    }
+    const al = f.tau/(f.tau + dt);
+    IMU.lean = al*(IMU.lean + pr*(d.gyroSign||1)*dt) + (1 - al)*IMU.ref;
+  }
+  if(imuFused()) gUpdate();
+}
+
+async function imuCalibrate(){
+  if(!imuLive()){ msg('Primero activa o conecta los sensores.'); return; }
+  IMU.calib = []; $('bCalib').disabled = true;
+  msg('Calibrando… mantén la moto recta y quieta 2 segundos.');
+  await new Promise(r => setTimeout(r, 2000));
+  const arr = IMU.calib; IMU.calib = null; $('bCalib').disabled = false;
+  if(arr.length < 10){ msg('No llegan datos de los sensores.'); return; }
+  const m = [0,1,2].map(i => arr.reduce((s,a) => s + a[i], 0)/arr.length);
+  const vr = arr.reduce((s,a) => s + (a[0]-m[0])**2 + (a[1]-m[1])**2 + (a[2]-m[2])**2, 0)/arr.length, g = vlen(m);
+  if(vr > 0.6 || g < 8 || g > 11.5){ msg('Había movimiento o vibración. Repite con la moto quieta (motor apagado).'); return; }
+  IMU.dev = newDev(); IMU.dev.up = vnorm(m); IMU.lean = 0; IMU.corr = 0; IMU.corrN = 0;
+  imuSave(); renderImu();
+  msg('Paso 1 ✓ vertical calibrada. Paso 2: acelera y frena en una recta para que aprenda la dirección de marcha.');
+}
+
+async function startPhoneImu(silent){
+  stopImu();
+  if(typeof DeviceMotionEvent === 'undefined'){ if(!silent) msg('Este móvil no da acceso a los sensores.'); return; }
+  if(typeof DeviceMotionEvent.requestPermission === 'function'){
+    try{ if(await DeviceMotionEvent.requestPermission() !== 'granted'){ msg('Permiso de sensores denegado.'); return; } }
+    catch(e){ msg('Permiso de sensores: ' + e.message); return; }
+  }
+  const h = e => {
+    const a = e.accelerationIncludingGravity, r = e.rotationRate;
+    if(!a || a.x == null || !r) return;
+    imuMotion([a.x, a.y, a.z], [r.beta || 0, r.gamma || 0, r.alpha || 0], performance.now());
+  };
+  window.addEventListener('devicemotion', h);
+  IMU.stopFn = () => window.removeEventListener('devicemotion', h);
+  renderImu();
+  if(!silent){
+    msg('Sensores del móvil activos.' + (IMU.dev.up ? '' : ' Pulsa "Calibrar montaje" con la moto recta y parada.'));
+    setTimeout(() => { if(IMU.mode === 'phone' && !imuLive()) msg('No llegan datos del giroscopio. Revisa que la web esté en https y el permiso de sensores en Chrome.'); }, 2500);
+  }
+}
+
+// RaceBox Mini / Mini S / Micro por Bluetooth (UART BLE, mensaje de datos 0xFF 0x01)
+const UART_S = '6e400001-b5a3-f393-e0a9-e50e24dcca9e', UART_TX = '6e400003-b5a3-f393-e0a9-e50e24dcca9e';
+async function startRaceBox(){
+  if(!navigator.bluetooth){ msg('Este navegador no permite Bluetooth. Usa Chrome en Android.'); return; }
+  try{
+    const dev = await navigator.bluetooth.requestDevice({filters:[{namePrefix:'RaceBox'}], optionalServices:[UART_S]});
+    msg('Conectando con ' + (dev.name || 'RaceBox') + '…');
+    const gatt = await dev.gatt.connect();
+    const ch = await (await gatt.getPrimaryService(UART_S)).getCharacteristic(UART_TX);
+    await stop();
+    let buf = new Uint8Array(0), got = 0;
+    const onData = e => {
+      const v = new Uint8Array(e.target.value.buffer), nb = new Uint8Array(buf.length + v.length);
+      nb.set(buf); nb.set(v, buf.length); buf = parseRB(nb, () => got++);
+    };
+    ch.addEventListener('characteristicvaluechanged', onData);
+    await ch.startNotifications();
+    stopFn = async () => { try{ ch.removeEventListener('characteristicvaluechanged', onData); await ch.stopNotifications(); }catch(e){} try{ gatt.disconnect(); }catch(e){} };
+    dev.addEventListener('gattserverdisconnected', () => { if(S.srcName === 'RaceBox'){ stop(); msg('RaceBox desconectado.'); } });
+    setSrc('RaceBox'); store('lt_src', 'racebox'); wake(); renderImu();
+    setTimeout(() => { if(!got) msg('Conectado, pero no llegan datos reconocibles del RaceBox. Mándame una captura.'); }, 4000);
+  }catch(e){ msg(e.name === 'NotFoundError' ? 'No se eligió ningún dispositivo.' : 'Bluetooth: ' + e.message); }
+}
+function parseRB(buf, ok){
+  let i = 0;
+  while(buf.length - i >= 8){
+    if(buf[i] !== 0xB5 || buf[i+1] !== 0x62){ i++; continue; }
+    const len = buf[i+4] | (buf[i+5] << 8);
+    if(len > 512){ i++; continue; }
+    if(buf.length - i < len + 8) break;
+    let a = 0, b = 0;
+    for(let k = i+2; k < i+6+len; k++){ a = (a + buf[k]) & 255; b = (b + a) & 255; }
+    if(a === buf[i+6+len] && b === buf[i+7+len]){
+      if(buf[i+2] === 0xFF && buf[i+3] === 0x01 && len === 80){ rbData(new DataView(buf.buffer, buf.byteOffset + i + 6, 80)); ok(); }
+      i += len + 8;
+    } else i++;
+  }
+  return buf.slice(i);
+}
+function rbData(d){
+  S.sats = d.getUint8(23); S.hdop = (d.getUint16(64, true)/100).toFixed(1);
+  imuMotion([d.getInt16(68,true)/1000*G, d.getInt16(70,true)/1000*G, d.getInt16(72,true)/1000*G],
+            [d.getInt16(74,true)/100, d.getInt16(76,true)/100, d.getInt16(78,true)/100], performance.now());
+  if(d.getUint8(20) !== 3){ msg('RaceBox conectado. Buscando satélites…'); return; }
+  const t = Date.UTC(d.getUint16(4,true), d.getUint8(6)-1, d.getUint8(7), d.getUint8(8), d.getUint8(9), d.getUint8(10)) + d.getInt32(16,true)/1e6;
+  onSample({t, lat:d.getInt32(28,true)/1e7, lon:d.getInt32(24,true)/1e7, spd:d.getInt32(48,true)/1000, hdg:d.getInt32(52,true)/1e5});
+}
+
+function renderImu(){
+  const info = IMU_INFO[IMU.mode];
+  $('imuStat').textContent = info.stat;
+  $('imuHelp').textContent = info.hint; $('imuHelp').hidden = !info.hint;
+  const hw = HW(IMU.mode);
+  $('navOpts').hidden = IMU.mode !== 'navisys'; $('gBox').hidden = IMU.mode === 'off';
+  $('imuBtns').hidden = !hw; $('imuOpts').hidden = IMU.mode === 'off';
+  if(info.conn) $('bImuConnTxt').textContent = info.conn;
+  $('leanBox').hidden = IMU.mode === 'off';
+  imuSteps();
+}
+function imuSteps(){
+  let t = '';
+  if(IMU.mode === 'gps') t = 'Inclinación por trazada activa' + (S.srcName === 'GPS móvil' ? ' · con GPS del móvil será poco precisa' : '');
+  else if(HW(IMU.mode)){
+    const d = IMU.dev, live = imuLive();
+    t = `Sensores: ${live ? IMU.hz.length + ' Hz' : 'sin datos'} · ① Vertical ${d.up ? '✓' : 'pendiente'} · ② Dirección de marcha ${d.fwd ? '✓' : d.up ? Math.min(99, Math.round(d.fwdN/FWD_N*100)) + '%' : 'pendiente'}`;
+    if(live && d.fwd) t += ' · usando IMU'; else if(d.up || live) t += ' · mientras tanto, estimación por GPS';
+    if(IMU.mode === 'navisys') t += ` · Receptor: UBX ${UBXS.pvt ? '✓' : '—'} · configurado ${IMU.rxCfg ? '✓' : '—'}` + (UBXS.att ? ' · actitud ✓' : '');
+  }
+  $('imuSteps').textContent = t;
+}
+function renderLean(){
+  if(IMU.mode === 'off') return;
+  const v = S.prev && performance.now() - S.lastWall < 3000 ? leanOut() : 0, a = Math.min(60, Math.abs(v));
+  $('lNow').textContent = Math.round(a) + '°' + (a >= 1 ? (v > 0 ? ' D' : ' I') : '');
+  const fill = $('lFill'); fill.style.width = (a/60*50) + '%';
+  fill.style.left = v >= 0 ? '50%' : (50 - a/60*50) + '%';
+  fill.className = 'lb-fill' + (a > 45 ? ' hi' : '');
+  $('lMaxL').textContent = Math.round(S.lapLeanL || 0) + '°';
+  $('lMaxR').textContent = Math.round(S.lapLeanR || 0) + '°';
+}
+$('imuMode').onchange = async e => {
+  const prev = IMU.mode; stopImu();
+  if(prev === 'racebox' && S.srcName === 'RaceBox') await stop();
+  IMU.mode = e.target.value; IMU.dev = load('lt_imu_dev_' + IMU.mode) || newDev();
+  IMU.lean = 0; IMU.corr = 0; IMU.corrN = 0; imuSave(); renderImu();
+  if(IMU.mode === 'navisys' && S.srcName === 'GPS USB') navisysConfig();
+};
+$('imuFilt').onchange = e => { IMU.filter = e.target.value; imuSave(); };
+$('imuInv').onchange = e => { IMU.invert = e.target.checked; imuSave(); };
+$('bImuConn').onclick = () => IMU.mode === 'phone' ? startPhoneImu(false) : IMU.mode === 'racebox' ? startRaceBox() : startUsb();
+$('bCalib').onclick = imuCalibrate;
+imuLoad();
 
 /* ---------- datos: modo demo (local) o nube (Firebase) ---------- */
 const K = k => k + '_' + (DB.user ? DB.user.uid : 'anon');
@@ -1145,7 +1772,7 @@ const DB = {
     deleteDoc(doc(this.db, 'users', this.user.uid, 'tandas', String(id))).catch(e => msg('No se pudo borrar la tanda: ' + e.message));
   }
 };
-window.__T = {S, C, DB};
+window.__T = {S, C, DB, IMU, parseRB, feedBytes, UBXS, TL, tlReadAll, GF, valset};
 
 /* ---------- pantallas ---------- */
 function show(name){
@@ -1187,7 +1814,12 @@ $('loginForm').onsubmit = async e => {
   if(DB.mode !== 'cloud'){ $('lErr').textContent = 'La base de datos aún no está configurada. Usa el modo demo.'; return; }
   if(!u || !p){ $('lErr').textContent = 'Escribe usuario y contraseña.'; return; }
   $('bLogin').disabled = true; $('lErr').textContent = '';
-  try{ await DB.fb.signInWithEmailAndPassword(DB.auth, toEmail(u), p); }
+  const rem = $('lRemember').checked;
+  store('lt_remember', {on: rem, user: rem ? u.trim() : ''});
+  try{
+    try{ await DB.fb.setPersistence(DB.auth, rem ? DB.fb.browserLocalPersistence : DB.fb.browserSessionPersistence); }catch(e){}
+    await DB.fb.signInWithEmailAndPassword(DB.auth, toEmail(u), p);
+  }
   catch(err){ $('lErr').textContent = authErr(err); }
   finally{ $('bLogin').disabled = false; }
 };
@@ -1219,6 +1851,7 @@ async function enterApp(){
   show('scrApp');
   if(C.cur) setTimeout(() => Map_.view(C.cur.center, 16), 80);
   msg('Hola, ' + (DB.user.name || DB.user.username) + '. Elige la fuente GPS y pulsa Empezar.');
+  tlInfo();
 }
 async function logout(){
   if(S.run === 'running'){ show('scrApp'); msg('Para o finaliza la tanda antes de salir.'); return; }
@@ -1228,6 +1861,7 @@ async function logout(){
   show('scrHome');
 }
 $('bLogout').onclick = logout; $('bLogout2').onclick = logout;
+(() => { const r = load('lt_remember'); if(r){ $('lRemember').checked = r.on !== false; if(r.on && r.user) $('lUser').value = r.user; } })();
 $('bDemo').onclick = () => { DB.mode = 'local'; DB.user = {uid:'demo', name:'Demo', username:'demo', role:'admin'}; enterApp(); };
 
 /* ---------- administración ---------- */
