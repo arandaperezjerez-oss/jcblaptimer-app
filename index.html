@@ -124,6 +124,8 @@ tr.best>td{color:var(--acc);font-weight:700}
 .hi .t2 b{color:var(--acc);font-weight:700}
 .hi table{margin-top:8px}
 .hi td{font-size:14px;padding:7px 4px}
+.arch-btns{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.arch-btns .btn{flex:1 1 auto}
 
 details.help{font-size:14px;color:var(--mut);line-height:1.5}
 details.help summary{cursor:pointer;color:var(--txt);font-weight:600}
@@ -413,8 +415,15 @@ details.help li{margin-bottom:6px}
     </section>
 
     <section class="card">
-      <div class="ch"><h2>Historial de tandas</h2><span id="histCount"></span></div>
+      <div class="ch"><h2>Archivo de tandas</h2><span id="histCount"></span></div>
+      <div class="field"><select id="histCirc" class="inp"></select></div>
+      <p class="hint" id="histSum" hidden></p>
       <div class="hist" id="hist"></div>
+      <div class="g2" style="margin-top:12px">
+        <button class="btn sm acc" id="bArchCsv"><svg class="i"><use href="#i-down"/></svg>Archivo completo (CSV)</button>
+        <button class="btn sm" id="bArchJson"><svg class="i"><use href="#i-down"/></svg>Copia de seguridad</button>
+      </div>
+      <p class="hint" style="margin:10px 0 0">Las vueltas de cada tanda se archivan en tu cuenta, en la nube. La telemetría detallada se archiva en este móvil (las 40 últimas tandas).</p>
     </section>
 
     <section class="card">
@@ -740,7 +749,7 @@ function finishSession(){
   const dur = sessionTotal();
   if(S.laps.length){
     const best = S.laps[S.bestIdx].time, ideal = idealOf(S.laps);
-    HIST.unshift({id:Date.now(), date:Date.now(), circ: C.cur ? C.cur.name : '—', dur, best, ideal,
+    HIST.unshift({id:TL.sid || Date.now(), date:Date.now(), circ: C.cur ? C.cur.name : '—', dur, best, ideal,
       laps: S.laps.map(l => ({n:l.n, time:l.time, vmax:l.vmax, secs:l.secs, leanL:l.leanL ?? null, leanR:l.leanR ?? null, brakeG:l.brakeG ?? null, accG:l.accG ?? null, latG:l.latG ?? null}))});
     HIST = HIST.slice(0, 200); DB.addHist(HIST[0]);
     flashMsg(fmt(best), 'TANDA TERMINADA', S.laps.length + (S.laps.length===1 ? ' vuelta' : ' vueltas'), null,
@@ -749,7 +758,7 @@ function finishSession(){
   S.lastGpx = S.gpx; S.gpx = [];
   S.laps = []; S.bestIdx = -1; S.run = 'idle'; S.sessAcc = 0; S.sessStart = null; cancelLap();
   saveSession(); Map_.clearTrack(); stop(); renderLaps(); renderHist(); updateCtrl();
-  tlFlush().then(tlInfo);
+  tlFlush().then(tlRefreshSids);
 }
 
 /* ---------- circuitos ---------- */
@@ -934,28 +943,73 @@ function renderLaps(){
   $('best').textContent = S.bestIdx>=0 ? fmt(S.laps[S.bestIdx].time) : '—';
   $('ideal').textContent = n && bs.every(x => x!=null) ? fmt(bs.reduce((a,b) => a+b, 0)) : '—';
 }
+let histFilter = '';
 function renderHist(){
-  $('histCount').textContent = HIST.length ? HIST.length + ' guardadas' : '';
-  if(!HIST.length){ $('hist').innerHTML = '<div class="empty" style="font-size:14px;color:var(--mut);text-align:center;padding:8px 0">Las tandas finalizadas aparecerán aquí</div>'; return; }
-  $('hist').innerHTML = HIST.map(h => {
-    const d = new Date(h.date), nS = Math.max(0, ...h.laps.map(l => l.secs ? l.secs.length : 0));
-    const when = d.toLocaleDateString('es-ES', {day:'numeric', month:'short'}) + ' · ' + d.toLocaleTimeString('es-ES', {hour:'2-digit', minute:'2-digit'});
+  const circs = [...new Set(HIST.map(h => h.circ))].sort((a,b) => String(a).localeCompare(String(b)));
+  if(histFilter && !circs.includes(histFilter)) histFilter = '';
+  $('histCirc').innerHTML = '<option value="">Todos los circuitos</option>' + circs.map(c => `<option ${c===histFilter?'selected':''}>${esc(c)}</option>`).join('');
+  const list = HIST.filter(h => !histFilter || h.circ === histFilter);
+  const nl = list.reduce((a, h) => a + h.laps.length, 0);
+  let best = null; list.forEach(h => { if(h.best != null && (!best || h.best < best.best)) best = h; });
+  $('histCount').textContent = list.length ? list.length + (list.length === 1 ? ' tanda' : ' tandas') : '';
+  $('histSum').innerHTML = list.length ? `${list.length} ${list.length===1?'tanda':'tandas'} · ${nl} vueltas` +
+    (best ? ` · Mejor vuelta <b style="color:var(--acc)">${fmt(best.best)}</b> (${esc(best.circ)}, ${new Date(best.date).toLocaleDateString('es-ES')})` : '') : '';
+  $('histSum').hidden = !list.length;
+  if(!list.length){ $('hist').innerHTML = '<div class="empty" style="font-size:14px;color:var(--mut);text-align:center;padding:8px 0">Las tandas finalizadas se archivan aquí</div>'; return; }
+  $('hist').innerHTML = list.map(h => {
+    const d = new Date(h.date), nS = Math.max(0, ...h.laps.map(l => l.secs ? l.secs.length : 0)), tele = TL.sids.has(h.id);
+    const when = d.toLocaleDateString('es-ES', {day:'numeric', month:'short', year:'numeric'}) + ' · ' + d.toLocaleTimeString('es-ES', {hour:'2-digit', minute:'2-digit'});
     return `<details class="hi"><summary>
       <div class="t1">${esc(h.circ)}<span>${when}</span></div>
-      <div class="t2">${h.laps.length} vueltas · Mejor <b>${fmt(h.best)}</b>${h.ideal ? ' · Ideal ' + fmt(h.ideal) : ''} · ${fmtDur(h.dur)}</div>
+      <div class="t2">${h.laps.length} vueltas · Mejor <b>${fmt(h.best)}</b>${h.ideal ? ' · Ideal ' + fmt(h.ideal) : ''} · ${fmtDur(h.dur)}${tele ? ' · telemetría ✓' : ''}</div>
     </summary>
     <table><tbody>${lapRows(h.laps, nS)}</tbody></table>
-    <div class="g2" style="margin-top:10px">
-      <button class="btn sm" data-csv="${h.id}"><svg class="i"><use href="#i-down"/></svg>CSV</button>
+    <div class="arch-btns">
+      <button class="btn sm" data-csv="${h.id}"><svg class="i"><use href="#i-down"/></svg>Vueltas</button>
+      ${tele ? `<button class="btn sm" data-tg="${h.id}"><svg class="i"><use href="#i-down"/></svg>Telemetría GPS</button>
+      <button class="btn sm" data-ti="${h.id}"><svg class="i"><use href="#i-down"/></svg>Telemetría IMU</button>
+      <button class="btn sm" data-gpx="${h.id}"><svg class="i"><use href="#i-down"/></svg>GPX</button>` : ''}
       <button class="btn sm" data-del="${h.id}"><svg class="i"><use href="#i-trash"/></svg><span>Borrar</span></button>
     </div></details>`;
   }).join('');
 }
+$('histCirc').onchange = e => { histFilter = e.target.value; renderHist(); };
 $('hist').addEventListener('click', e => {
   const b = e.target.closest('button'); if(!b) return;
-  if(b.dataset.csv){ const h = HIST.find(x => x.id == b.dataset.csv); if(h) download('tanda_' + new Date(h.date).toISOString().slice(0,16).replace(/[:T]/g,'-') + '.csv', csvFor(h.laps), 'text/csv'); }
-  if(b.dataset.del){ const id = b.dataset.del; armButton(b, b.querySelector('span'), '¿Seguro?', () => { HIST = HIST.filter(x => x.id != id); DB.delHist(id); renderHist(); }); }
+  const find = id => HIST.find(x => x.id == id);
+  if(b.dataset.csv){ const h = find(b.dataset.csv); if(h) download('vueltas_' + stampOf(h.date) + '.csv', csvFor(h.laps), 'text/csv'); }
+  if(b.dataset.tg) exportTeleG(+b.dataset.tg);
+  if(b.dataset.ti) exportTeleI(+b.dataset.ti);
+  if(b.dataset.gpx){ const h = find(b.dataset.gpx); exportGpx(+b.dataset.gpx, h ? h.circ : null); }
+  if(b.dataset.del){
+    const id = b.dataset.del;
+    armButton(b, b.querySelector('span'), '¿Seguro?', () => { HIST = HIST.filter(x => x.id != id); DB.delHist(id); tlDelete(+id, true); renderHist(); tlRefreshSids(); });
+  }
 });
+function csvArchive(list){
+  const ns = Math.max(0, ...list.flatMap(h => h.laps.map(l => l.secs ? l.secs.length : 0)));
+  const pilot = DB.user ? (DB.user.name || DB.user.username) : '';
+  const head = ['fecha','hora','circuito','piloto','duracion_tanda','vuelta','tiempo','segundos','dif_mejor_tanda','mejor_de_la_tanda','vmax_kmh','incl_max_izq','incl_max_der','g_frenada_max','g_aceleracion_max','g_lateral_max'].concat(Array.from({length:ns}, (_,i) => 'S' + (i+1)));
+  const rows = [head.join(';')];
+  list.slice().sort((a,b) => a.date - b.date).forEach(h => {
+    const d = new Date(h.date), date = d.toLocaleDateString('es-ES'), hour = d.toLocaleTimeString('es-ES', {hour:'2-digit', minute:'2-digit'});
+    h.laps.forEach(l => rows.push([date, hour, h.circ, pilot, fmtDur(h.dur), l.n, fmt(l.time), (l.time/1000).toFixed(3), ((l.time-h.best)/1000).toFixed(3), l.time === h.best ? 'sí' : '',
+      Math.round(l.vmax), l.leanL ?? '', l.leanR ?? '', l.brakeG ?? '', l.accG ?? '', l.latG ?? '']
+      .concat(Array.from({length:ns}, (_,i) => l.secs && l.secs[i] != null ? (l.secs[i]/1000).toFixed(3) : '')).map(v => String(v).replace(/;/g, ',')).join(';')));
+  });
+  return rows.join('\n');
+}
+$('bArchCsv').onclick = () => {
+  const list = HIST.filter(h => !histFilter || h.circ === histFilter);
+  if(!list.length){ msg('El archivo está vacío: finaliza una tanda para archivarla.'); return; }
+  download('archivo_vueltas_' + (histFilter ? histFilter.replace(/[^\wáéíóúñ]+/gi, '_') + '_' : '') + stampOf(Date.now()) + '.csv', csvArchive(list), 'text/csv');
+};
+$('bArchJson').onclick = () => {
+  if(!HIST.length){ msg('El archivo está vacío: finaliza una tanda para archivarla.'); return; }
+  const data = {app:'JCB Laptimer', exportado: new Date().toISOString(), piloto: DB.user ? (DB.user.name || DB.user.username) : '',
+    circuitos: C.list.map(({temp, ...c}) => c), tandas: HIST};
+  download('jcb_laptimer_copia_' + stampOf(Date.now()) + '.json', JSON.stringify(data, null, 1), 'application/json');
+};
 function renderSecs(now){
   const n = nSeg(), box = $('secs');
   if(!n){ box.innerHTML = ''; return; }
@@ -1012,7 +1066,8 @@ function frame(now){
 function saveSession(){ store(K('lt_session'), {laps:S.laps, bestIdx:S.bestIdx}); }
 function resetLive(){
   S.origin=null; S.prev=null; cancelLap(); S.lapDist=0;
-  S.ubxSeen=false; S.hzT=[]; S.sats=null; S.hdop=null; S.acc=null; S.lastSpd=0; S.detected=false; S.mapBuf=[];
+  S.ubxSeen=false; S.hzT=[]; S.sats=null;
+  IMU.hist=[]; IMU.lastCourse=null; IMU.lastCourseT=null; IMU.lastSpd=null; IMU.lastSpdT=null; IMU.yaw=0; IMU.longAcc=0; IMU.lean=0; IMU.ref=0; GF.long=0; GF.lat=0; S.hdop=null; S.acc=null; S.lastSpd=0; S.detected=false; S.mapBuf=[];
 }
 function download(name, text, type){
   const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], {type}));
@@ -1026,21 +1081,10 @@ function csvFor(laps){
     .concat(Array.from({length:ns}, (_,i) => l.secs && l.secs[i]!=null ? (l.secs[i]/1000).toFixed(3) : '')).join(';'))).join('\n');
 }
 $('bCsv').onclick = () => {
-  if(!S.laps.length){ msg('No hay vueltas en la tanda actual. Las tandas terminadas se exportan desde el historial.'); return; }
+  if(!S.laps.length){ msg('No hay vueltas en la tanda actual. Las tandas terminadas se exportan desde el Archivo de tandas.'); return; }
   download('tanda_' + stamp() + '.csv', csvFor(S.laps), 'text/csv');
 };
-$('bGpx').onclick = async () => {
-  const T = await tlReadAll();
-  const data = T.g.length > 1 ? T.g.map(r => [r[1], r[2], r[0]]) : (S.gpx.length > 1 ? S.gpx : S.lastGpx);
-  if(!data || data.length < 2){ msg('Aún no hay trazado grabado.'); return; }
-  const wpt = [];
-  if(C.cur?.finish){ const f = C.cur.finish; wpt.push(`<wpt lat="${(f.a[0]+f.b[0])/2}" lon="${(f.a[1]+f.b[1])/2}"><name>META</name></wpt>`); }
-  (C.cur?.sectors || []).forEach((l,i) => wpt.push(`<wpt lat="${(l.a[0]+l.b[0])/2}" lon="${(l.a[1]+l.b[1])/2}"><name>Parcial ${i+1}</name></wpt>`));
-  const pts = data.map(p => `<trkpt lat="${p[0].toFixed(7)}" lon="${p[1].toFixed(7)}"><time>${new Date(p[2]).toISOString()}</time></trkpt>`).join('\n');
-  download('tanda_' + stamp() + '.gpx',
-    `<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="JCB Laptimer" xmlns="http://www.topografix.com/GPX/1/1">\n${wpt.join('\n')}\n<trk><name>${esc(C.cur ? C.cur.name : 'Tanda')}</name><trkseg>\n${pts}\n</trkseg></trk>\n</gpx>`,
-    'application/gpx+xml');
-};
+$('bGpx').onclick = () => exportGpx(latestSid());
 function markHere(kind){
   if(!S.lastLL || S.lastHeading==null){ msg('Necesito GPS y que la moto esté en movimiento para saber la dirección.'); return; }
   const circ = ensureCircuit(S.lastLL.lat, S.lastLL.lon);
@@ -1406,62 +1450,109 @@ function renderG(){
   $('gLatMax').textContent = 'máx ' + (S.lapLat || 0).toFixed(2);
 }
 
-/* ---------- telemetría: registro completo con guardado continuo en el móvil ---------- */
-const TL = { db:null, gps:[], imu:[], lastFlush:0, tOff:null };
+/* ---------- telemetría: registro completo, archivada por tanda en el móvil ---------- */
+const TL = { db:null, gps:[], imu:[], lastFlush:0, tOff:null, sid:null, sids:new Set() };
+const TL_KEEP = 40;
 function tlOpen(){
   if(TL.db) return Promise.resolve(TL.db);
   return new Promise(res => {
     try{
-      const r = indexedDB.open('jcb_telemetria', 1);
-      r.onupgradeneeded = () => { r.result.createObjectStore('chunks', {autoIncrement:true}); r.result.createObjectStore('meta'); };
+      const r = indexedDB.open('jcb_telemetria', 2);
+      r.onupgradeneeded = () => {
+        const db = r.result;
+        for(const n of ['chunks','meta']) if(db.objectStoreNames.contains(n)) db.deleteObjectStore(n);
+        if(!db.objectStoreNames.contains('tele')) db.createObjectStore('tele', {autoIncrement:true}).createIndex('sid', 'sid');
+        if(!db.objectStoreNames.contains('sessions')) db.createObjectStore('sessions', {keyPath:'sid'});
+      };
       r.onsuccess = () => { TL.db = r.result; res(TL.db); };
       r.onerror = () => res(null);
     }catch(e){ res(null); }
   });
 }
-function idbDo(fn){
+function idbTx(stores, mode, fn){
   return new Promise(res => {
-    try{ const tx = TL.db.transaction(['chunks','meta'], 'readwrite'); fn(tx); tx.oncomplete = () => res(true); tx.onerror = tx.onabort = () => res(false); }
+    try{ const tx = TL.db.transaction(stores, mode); fn(tx); tx.oncomplete = () => res(true); tx.onerror = tx.onabort = () => res(false); }
     catch(e){ res(false); }
   });
 }
+async function tlSessions(){
+  await tlOpen(); if(!TL.db) return [];
+  let out = []; await idbTx(['sessions'], 'readonly', tx => { tx.objectStore('sessions').getAll().onsuccess = e => out = e.target.result || []; });
+  return out;
+}
+async function tlRefreshSids(){
+  const ss = await tlSessions();
+  TL.sids = new Set(ss.filter(m => !DB.user || !m.user || m.user === DB.user.uid).map(m => m.sid));
+  renderHist(); tlInfo();
+}
 async function tlStart(){
-  TL.gps = []; TL.imu = [];
+  TL.gps = []; TL.imu = []; TL.sid = Date.now();
   await tlOpen(); if(!TL.db) return;
-  await idbDo(tx => { tx.objectStore('chunks').clear(); tx.objectStore('meta').put({start:Date.now(), circ: C.cur ? C.cur.name : '', user: DB.user ? DB.user.uid : ''}, 'cur'); });
-  tlInfo();
+  await idbTx(['sessions'], 'readwrite', tx => tx.objectStore('sessions').put({sid:TL.sid, start:TL.sid, circ: C.cur ? C.cur.name : '', user: DB.user ? DB.user.uid : ''}));
+  const ss = (await tlSessions()).sort((a, b) => b.sid - a.sid);
+  for(const m of ss.slice(TL_KEEP)) await tlDelete(m.sid, true);
+  tlRefreshSids();
 }
 function tlFlush(){
-  if(!TL.db || (!TL.gps.length && !TL.imu.length)) return Promise.resolve();
+  if(!TL.db || !TL.sid || (!TL.gps.length && !TL.imu.length)) return Promise.resolve();
   const g = TL.gps, i = TL.imu; TL.gps = []; TL.imu = [];
-  return idbDo(tx => tx.objectStore('chunks').add({g, i}));
+  return idbTx(['tele'], 'readwrite', tx => tx.objectStore('tele').add({sid:TL.sid, g, i}));
 }
-async function tlReadAll(){
-  await tlOpen();
-  if(!TL.db) return {g:TL.gps, i:TL.imu, meta:null};
-  await tlFlush();
-  return new Promise(res => {
-    try{
-      const tx = TL.db.transaction(['chunks','meta'], 'readonly'); let chunks = [], meta = null;
-      tx.objectStore('chunks').getAll().onsuccess = e => chunks = e.target.result || [];
-      tx.objectStore('meta').get('cur').onsuccess = e => meta = e.target.result || null;
-      tx.oncomplete = () => { const g = [], i = []; for(const c of chunks){ for(const r of c.g) g.push(r); for(const r of c.i) i.push(r); } res({g, i, meta}); };
-      tx.onerror = () => res({g:[], i:[], meta:null});
-    }catch(e){ res({g:[], i:[], meta:null}); }
+async function tlReadAll(sid){
+  sid = sid || TL.sid; await tlOpen();
+  if(!TL.db) return {g:TL.gps, i:TL.imu};
+  if(sid === TL.sid) await tlFlush();
+  const box = {g:[], i:[]};
+  if(!sid) return box;
+  await idbTx(['tele'], 'readonly', tx => {
+    tx.objectStore('tele').index('sid').getAll(sid).onsuccess = e => { for(const c of (e.target.result || [])){ for(const r of c.g) box.g.push(r); for(const r of c.i) box.i.push(r); } };
   });
+  return box;
 }
-async function tlInfo(){
-  await tlOpen(); if(!TL.db){ $('teleInfo').textContent = ''; return; }
-  const tx = TL.db.transaction(['chunks','meta'], 'readonly');
-  let meta = null, n = 0;
-  tx.objectStore('meta').get('cur').onsuccess = e => meta = e.target.result || null;
-  tx.objectStore('chunks').count().onsuccess = e => n = e.target.result || 0;
-  tx.oncomplete = () => {
-    if(!meta || (DB.user && meta.user && meta.user !== DB.user.uid)){ $('teleInfo').textContent = ''; return; }
-    const d = new Date(meta.start);
-    $('teleInfo').textContent = (S.run === 'running' ? 'Grabando telemetría y guardándola en el móvil cada 2 s.' :
-      'Telemetría guardada en el móvil de la tanda del ' + d.toLocaleDateString('es-ES') + ' ' + d.toLocaleTimeString('es-ES', {hour:'2-digit', minute:'2-digit'}) + (meta.circ ? ' (' + meta.circ + ')' : '') + '. Se conserva hasta la próxima tanda.') + (n || S.run === 'running' ? '' : ' (sin datos)');
-  };
+async function tlDelete(sid, quiet){
+  await tlOpen(); if(!TL.db) return;
+  await idbTx(['tele','sessions'], 'readwrite', tx => {
+    tx.objectStore('sessions').delete(sid);
+    tx.objectStore('tele').index('sid').openKeyCursor(IDBKeyRange.only(sid)).onsuccess = e => {
+      const c = e.target.result; if(c){ tx.objectStore('tele').delete(c.primaryKey); c.continue(); }
+    };
+  });
+  if(!quiet) tlRefreshSids();
+}
+function tlInfo(){
+  const n = TL.sids.size;
+  $('teleInfo').textContent = S.run === 'running' ? 'Grabando telemetría y guardándola en el móvil cada 2 s.' :
+    n ? 'Telemetría de ' + n + (n === 1 ? ' tanda' : ' tandas') + ' archivada en este móvil (se conservan las ' + TL_KEEP + ' últimas). Descárgala desde el Archivo de tandas.' : '';
+}
+const latestSid = () => TL.sid || (TL.sids.size ? Math.max(...TL.sids) : null);
+const stampOf = t => { const d = new Date(t), z = n => String(n).padStart(2,'0'); return d.getFullYear() + '-' + z(d.getMonth()+1) + '-' + z(d.getDate()) + '_' + z(d.getHours()) + '-' + z(d.getMinutes()); };
+async function exportTeleG(sid){
+  const T = await tlReadAll(sid);
+  if(T.g.length < 2){ msg('No hay telemetría GPS de esa tanda en este móvil.'); return; }
+  const t0 = T.g[0][0];
+  const rows = ['tiempo_s;hora_utc;lat;lon;vel_kmh;inclinacion_grados;g_longitudinal;g_lateral;satelites;roll_receptor'].concat(
+    T.g.map(r => [((r[0]-t0)/1000).toFixed(3), new Date(r[0]).toISOString(), r[1], r[2], r[3], r[4] ?? '', r[5] ?? '', r[6] ?? '', r[7] ?? '', r[8] ?? ''].join(';')));
+  download('telemetria_gps_' + stampOf(sid || t0) + '.csv', rows.join('\n'), 'text/csv');
+}
+async function exportTeleI(sid){
+  const T = await tlReadAll(sid);
+  if(T.i.length < 2){ msg(HW(IMU.mode) ? 'No hay datos de la IMU de esa tanda en este móvil.' : 'La telemetría IMU necesita la opción A, B o C en la tarjeta de Inclinación.'); return; }
+  const t0 = T.g.length ? T.g[0][0] : T.i[0][0];
+  const rows = ['tiempo_s;hora_utc;acc_x_g;acc_y_g;acc_z_g;giro_x_dps;giro_y_dps;giro_z_dps;inclinacion_grados;g_longitudinal;g_lateral'].concat(
+    T.i.map(r => [((r[0]-t0)/1000).toFixed(3), new Date(r[0]).toISOString(), r[1], r[2], r[3], r[4], r[5], r[6], r[7], r[8] ?? '', r[9] ?? ''].join(';')));
+  download('telemetria_imu_' + stampOf(sid || t0) + '.csv', rows.join('\n'), 'text/csv');
+}
+async function exportGpx(sid, circName){
+  const T = await tlReadAll(sid);
+  const data = T.g.length > 1 ? T.g.map(r => [r[1], r[2], r[0]]) : (!sid || sid === TL.sid ? (S.gpx.length > 1 ? S.gpx : S.lastGpx) : null);
+  if(!data || data.length < 2){ msg('No hay trazado grabado de esa tanda en este móvil.'); return; }
+  const circ = circName ? (C.list.find(c => c.name === circName) || null) : C.cur, wpt = [];
+  if(circ?.finish){ const f = circ.finish; wpt.push(`<wpt lat="${(f.a[0]+f.b[0])/2}" lon="${(f.a[1]+f.b[1])/2}"><name>META</name></wpt>`); }
+  (circ?.sectors || []).forEach((l,i) => wpt.push(`<wpt lat="${(l.a[0]+l.b[0])/2}" lon="${(l.a[1]+l.b[1])/2}"><name>Parcial ${i+1}</name></wpt>`));
+  const pts = data.map(p => `<trkpt lat="${(+p[0]).toFixed(7)}" lon="${(+p[1]).toFixed(7)}"><time>${new Date(p[2]).toISOString()}</time></trkpt>`).join('\n');
+  download('tanda_' + stampOf(sid || data[0][2]) + '.gpx',
+    `<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="JCB Laptimer" xmlns="http://www.topografix.com/GPX/1/1">\n${wpt.join('\n')}\n<trk><name>${esc(circName || (C.cur ? C.cur.name : 'Tanda'))}</name><trkseg>\n${pts}\n</trkseg></trk>\n</gpx>`,
+    'application/gpx+xml');
 }
 function imuTimeSync(gpsT){ const o = gpsT - performance.now(); TL.tOff = TL.tOff == null ? o : TL.tOff + (o - TL.tOff)*0.05; }
 const r3 = x => x == null || !isFinite(x) ? null : Math.round(x*1000)/1000;
@@ -1476,22 +1567,8 @@ function tlImu(acc, gyro, t){
   TL.imu.push([Math.round(tt*10)/10, r3(acc[0]/G), r3(acc[1]/G), r3(acc[2]/G),
     Math.round(gyro[0]*100)/100, Math.round(gyro[1]*100)/100, Math.round(gyro[2]*100)/100, Math.round(leanOut()*10)/10, r3(GF.long), r3(GF.lat)]);
 }
-$('bTeleG').onclick = async () => {
-  const T = await tlReadAll();
-  if(T.g.length < 2){ msg('Aún no hay telemetría: se graba mientras la tanda está en marcha.'); return; }
-  const t0 = T.g[0][0];
-  const rows = ['tiempo_s;hora_utc;lat;lon;vel_kmh;inclinacion_grados;g_longitudinal;g_lateral;satelites;roll_receptor'].concat(
-    T.g.map(r => [((r[0]-t0)/1000).toFixed(3), new Date(r[0]).toISOString(), r[1], r[2], r[3], r[4] ?? '', r[5] ?? '', r[6] ?? '', r[7] ?? '', r[8] ?? ''].join(';')));
-  download('telemetria_gps_' + stamp() + '.csv', rows.join('\n'), 'text/csv');
-};
-$('bTeleI').onclick = async () => {
-  const T = await tlReadAll();
-  if(T.i.length < 2){ msg(HW(IMU.mode) ? 'Aún no hay datos de la IMU en esta tanda.' : 'La telemetría IMU necesita la opción A, B o C en la tarjeta de Inclinación.'); return; }
-  const t0 = T.g.length ? T.g[0][0] : T.i[0][0];
-  const rows = ['tiempo_s;hora_utc;acc_x_g;acc_y_g;acc_z_g;giro_x_dps;giro_y_dps;giro_z_dps;inclinacion_grados;g_longitudinal;g_lateral'].concat(
-    T.i.map(r => [((r[0]-t0)/1000).toFixed(3), new Date(r[0]).toISOString(), r[1], r[2], r[3], r[4], r[5], r[6], r[7], r[8] ?? '', r[9] ?? ''].join(';')));
-  download('telemetria_imu_' + stamp() + '.csv', rows.join('\n'), 'text/csv');
-};
+$('bTeleG').onclick = () => exportTeleG(latestSid());
+$('bTeleI').onclick = () => exportTeleI(latestSid());
 $('bNavCfg').onclick = navisysConfig;
 $('baud').value = load('lt_baud') || '115200';
 $('baud').onchange = e => store('lt_baud', e.target.value);
@@ -1554,10 +1631,10 @@ function imuGps(s, p, spd){
   }
   if(course != null && IMU.lastCourse != null && now > IMU.lastCourseT){
     const dh = ((course - IMU.lastCourse + 540) % 360) - 180, dt = now - IMU.lastCourseT;
-    IMU.yaw += (dh/(dt/1000) - IMU.yaw) * Math.min(1, dt/250);
+    if(dt < 1500) IMU.yaw += (Math.max(-150, Math.min(150, dh/(dt/1000))) - IMU.yaw) * Math.min(1, dt/250);
   }
   if(course != null){ IMU.lastCourse = course; IMU.lastCourseT = now; }
-  if(IMU.lastSpdT != null && now > IMU.lastSpdT){
+  if(IMU.lastSpdT != null && now > IMU.lastSpdT && now - IMU.lastSpdT < 1500){
     const dt = now - IMU.lastSpdT;
     IMU.longAcc += ((spd - IMU.lastSpd)/(dt/1000) - IMU.longAcc) * Math.min(1, dt/300);
   }
@@ -1851,7 +1928,7 @@ async function enterApp(){
   show('scrApp');
   if(C.cur) setTimeout(() => Map_.view(C.cur.center, 16), 80);
   msg('Hola, ' + (DB.user.name || DB.user.username) + '. Elige la fuente GPS y pulsa Empezar.');
-  tlInfo();
+  tlRefreshSids();
 }
 async function logout(){
   if(S.run === 'running'){ show('scrApp'); msg('Para o finaliza la tanda antes de salir.'); return; }
