@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0d10">
+<meta name="mobile-web-app-capable" content="yes">
+<title>JCB Laptimer</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+:root{--bg:#0b0d10;--card:#151a21;--line:#232a33;--txt:#e9eef4;--mut:#8b96a3;--acc:#ffcc00;--ok:#22c55e;--bad:#ef4444;--pb:#c084fc;--sec:#38bdf8}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--txt);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+body{padding:calc(env(safe-area-inset-top) + 4px) 12px calc(env(safe-area-inset-bottom) + 20px);max-width:640px;margin:0 auto}
+header{display:flex;justify-content:space-between;align-items:center;padding:8px 0 10px;gap:8px}
+.brand{font-weight:900;letter-spacing:1px;font-size:18px}.brand span{color:var(--acc)}
+.pills{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.pill{font-size:12px;padding:4px 9px;border-radius:999px;background:var(--card);border:1px solid var(--line);color:var(--mut);white-space:nowrap}
+.pill.on{color:var(--ok);border-color:#1f5131}.pill.warn{color:var(--acc);border-color:#5a4a10}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:12px 14px}
+.timer{text-align:center;padding-bottom:14px}
+.lapn{color:var(--mut);font-size:14px;display:flex;justify-content:space-between;gap:8px}
+.lapn span:first-child{text-align:left}
+.big{font-variant-numeric:tabular-nums;font-size:clamp(56px,19vw,112px);font-weight:800;line-height:1.05;margin:4px 0 8px;letter-spacing:-1px}
+.delta{display:inline-block;font-variant-numeric:tabular-nums;font-weight:800;font-size:24px;padding:3px 14px;border-radius:10px;background:#222a33;color:var(--mut)}
+.delta.neg{background:#123a22;color:var(--ok)}.delta.pos{background:#3a1414;color:var(--bad)}
+.secs{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:10px}
+.sp{font-variant-numeric:tabular-nums;font-size:15px;font-weight:700;padding:5px 9px;border-radius:9px;background:#1d242d;color:var(--mut);min-width:84px}
+.sp small{display:block;font-size:11px;font-weight:600;opacity:.85}
+.sp.pb{background:#2e1a47;color:var(--pb)}.sp.slow{background:#3a3110;color:var(--acc)}.sp.run{outline:1px solid #3a4655;color:var(--txt)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 2px;text-align:center}
+.stat b{display:block;font-size:17px;font-variant-numeric:tabular-nums;margin-top:2px}
+.stat small{color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.6px}
+#map{width:100%;height:300px;border-radius:12px;margin-top:10px;background:#1d242d;z-index:0}
+.leaflet-container{font:inherit}
+.lbl-line{background:#111c;color:#fff;border:0;border-radius:6px;font-weight:700;font-size:11px;padding:1px 5px;box-shadow:none}
+.lbl-line:before{display:none}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.btns3{grid-template-columns:1fr 1fr 1fr}
+button,select,input{font:inherit;font-weight:650;padding:13px 10px;border-radius:12px;border:1px solid var(--line);background:#1d242d;color:var(--txt);min-width:0}
+input{font-weight:500}
+select{padding:9px 10px}
+.sm{padding:9px 8px;font-size:14px}
+button.pri{background:var(--acc);color:#111;border-color:var(--acc)}
+button.blue{background:#0c3247;border-color:#155e80;color:#bae6fd}
+button.act{outline:2px solid var(--ok)}
+button.wide{grid-column:1/-1}
+button:active{transform:scale(.98)}
+h3{margin:20px 0 6px;font-size:13px;color:var(--mut);text-transform:uppercase;letter-spacing:.7px}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+td,th{padding:9px 6px;border-bottom:1px solid var(--line);text-align:right;font-size:16px;vertical-align:top}
+th{color:var(--mut);font-size:12px;font-weight:600}
+td:first-child,th:first-child{text-align:left}
+tr.best>td{color:var(--acc);font-weight:800}
+.sl{font-size:12px;color:var(--mut);font-weight:500;margin-top:3px}
+.sl .pb{color:var(--pb);font-weight:700}
+.empty{color:var(--mut);text-align:center!important;font-size:14px}
+.msg{color:var(--mut);font-size:13px;margin-top:8px;min-height:18px}
+.row{display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap}
+.row label{color:var(--mut);font-size:13px}
+.grow{flex:1}
+#results{display:flex;flex-direction:column;gap:6px;margin-top:6px}
+#results button{text-align:left;font-weight:500;font-size:14px;padding:10px}
+details{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:16px;color:var(--mut);font-size:14px;line-height:1.45}
+details summary{color:var(--txt);font-weight:700}
+details ol{padding-left:18px;margin:8px 0}
+#flash{position:fixed;inset:0;background:rgba(0,0,0,.93);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:1000;gap:6px}
+#flash.show{display:flex}
+#flash .big{font-size:clamp(70px,23vw,150px)}
+#flash .lbl{color:var(--mut);font-size:20px;letter-spacing:2px}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">JCB <span>LAPTIMER</span></div>
+  <div class="pills"><span id="src" class="pill">Sin GPS</span><span id="hz" class="pill">0 Hz</span></div>
+</header>
+
+<section class="card timer">
+  <div class="lapn"><span id="lapLabel">Sin meta</span><span id="fixInfo">—</span></div>
+  <div class="big" id="cur">0:00.00</div>
+  <div id="delta" class="delta">±0.00</div>
+  <div id="secs" class="secs"></div>
+</section>
+
+<div class="stats">
+  <div class="stat"><small>Última</small><b id="last">—</b></div>
+  <div class="stat"><small>Mejor</small><b id="best">—</b></div>
+  <div class="stat"><small>Ideal</small><b id="ideal">—</b></div>
+  <div class="stat"><small>km/h</small><b id="spd">0</b></div>
+</div>
+
+<div class="msg" id="msg">Conecta el receptor USB o usa el GPS del móvil.</div>
+
+<div class="btns">
+  <button class="pri" id="bUsb">🔌 GPS USB (25 Hz)</button>
+  <button id="bPhone">📱 GPS del móvil</button>
+  <button class="pri" id="bLine">🏁 Meta aquí</button>
+  <button class="blue" id="bSecHere">⏱ Parcial aquí</button>
+  <button id="bSim">🧪 Simular</button>
+  <button id="bStop">⏹ Parar</button>
+</div>
+
+<h3>Circuito</h3>
+<section class="card">
+  <div class="row" style="margin-top:0">
+    <select id="circSel" class="grow"></select>
+    <button id="bDelCirc" class="sm">🗑</button>
+  </div>
+  <div class="row">
+    <input id="cname" class="grow" placeholder="Nombre del circuito">
+  </div>
+  <div class="row">
+    <input id="q" class="grow" placeholder="Buscar circuito (ej. Circuito de Jerez)" enterkeyhint="search">
+    <button id="bFind" class="sm">🔍</button>
+  </div>
+  <div id="results"></div>
+  <div id="map"></div>
+  <div class="btns btns3">
+    <button id="mFinish" class="sm">🏁 Meta en mapa</button>
+    <button id="mSector" class="sm">➕ Parcial en mapa</button>
+    <button id="mUndo" class="sm">↩ Quitar parcial</button>
+    <button id="mLayer" class="sm">🗺 Mapa</button>
+    <button id="mFollow" class="sm act">📍 Seguirme</button>
+    <button id="mFit" class="sm">⤢ Ver todo</button>
+  </div>
+  <div class="row">
+    <label>Ancho línea</label>
+    <select id="width"><option>15</option><option>20</option><option selected>30</option><option>40</option><option>60</option></select>
+    <label>m · Vuelta mín.</label>
+    <select id="minlap"><option>10</option><option>20</option><option selected>30</option><option>45</option><option>60</option></select>
+    <label>s</label>
+  </div>
+</section>
+
+<h3>Vueltas</h3>
+<table>
+  <thead><tr><th>#</th><th>Tiempo / parciales</th><th>Dif.</th><th>Vmáx</th></tr></thead>
+  <tbody id="laps"><tr><td colspan="4" class="empty">Aún no hay vueltas</td></tr></tbody>
+</table>
+<div class="btns btns3">
+  <button id="bCsv" class="sm">⬇ CSV</button>
+  <button id="bGpx" class="sm">🗺 GPX</button>
+  <button id="bReset" class="sm">🗑 Nueva sesión</button>
+</div>
+
+<details>
+  <summary>Cómo usarla</summary>
+  <ol>
+    <li>Usa un móvil <b>Android con Chrome</b>. El receptor USB no funciona en iPhone (allí solo vale el GPS del móvil).</li>
+    <li><b>Prepara el circuito desde casa:</b> busca el circuito, verás la vista satélite. Pulsa <b>Meta en mapa</b> y toca los dos lados de la pista en la línea de meta. Haz lo mismo con <b>Parcial en mapa</b> para cada sector, <b>en el orden en que se recorren</b>.</li>
+    <li>También puedes marcarlas rodando: <b>Meta aquí</b> / <b>Parcial aquí</b> al pasar por el punto.</li>
+    <li>Conecta el receptor al USB‑C, ponlo en la moto mirando al cielo y pulsa <b>GPS USB</b>. Arriba debe salir <b>25 Hz</b>. Al llegar al circuito, la app lo reconoce sola y carga su meta y parciales.</li>
+    <li>Colores de parciales: <b style="color:var(--pb)">morado</b> = mejor parcial de la sesión, <b style="color:var(--acc)">amarillo</b> = más lento. <b>Ideal</b> = suma de tus mejores parciales.</li>
+    <li><b>GPX</b> exporta el trazado de la tanda para abrirlo en Google Earth, Google My Maps o cualquier app de mapas.</li>
+  </ol>
+  Con <b>Simular</b> puedes probarlo todo en casa.
+</details>
+
+<div id="flash"><div class="lbl" id="fL"></div><div class="big" id="fT"></div><div id="fD" class="delta"></div></div>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const PRESETS = [
+  ['Circuito de Jerez – Ángel Nieto', 36.7083, -6.0342],
+  ['Circuit de Barcelona-Catalunya', 41.5700, 2.2611],
+  ['MotorLand Aragón', 41.0780, -0.2030],
+  ['Circuit Ricardo Tormo (Valencia)', 39.4860, -0.6281],
+  ['Circuito del Jarama', 40.6170, -3.5858],
+  ['Circuito Monteblanco', 37.3577, -6.5650],
+  ['Circuito de Cartagena', 37.6290, -1.0010],
+  ['Circuito de Navarra', 42.5590, -2.1680],
+  ['Circuito de Albacete', 38.9560, -1.7900],
+  ['Autódromo Internacional do Algarve', 37.2297, -8.6267],
+  ['Circuito do Estoril', 38.7506, -9.3942]
+];
+const S = {
+  origin:null, prev:null, lastLL:null, lastHeading:null, lastSpd:0, detected:false,
+  lapStart:null, lapDist:0, lapVmax:0, lapSamples:[], splits:[], curSecs:[],
+  laps:[], bestIdx:-1, gpx:[], mapBuf:[],
+  lastWall:0, rate:1, hzT:[], sats:null, hdop:null, acc:null, srcName:null, delta:null
+};
+const C = { list:[], cur:null, saved:null };
+let stopFn = null, wakeLock = null;
+
+/* ---------- utilidades ---------- */
+function fmt(ms){
+  if(ms==null || !isFinite(ms)) return '—';
+  const neg = ms<0; ms = Math.abs(ms);
+  const m = Math.floor(ms/60000), s = (ms%60000)/1000;
+  return (neg?'-':'') + m + ':' + s.toFixed(2).padStart(5,'0');
+}
+function fmtS(ms){ if(ms==null) return '—'; return ms < 60000 ? (ms/1000).toFixed(2) : fmt(ms); }
+function fmtD(ms){ if(ms==null) return '±0.00'; return (ms>0?'+':ms<0?'−':'±') + Math.abs(ms/1000).toFixed(2); }
+function msg(t){ $('msg').textContent = t; }
+function store(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+function load(k){ try{ return JSON.parse(localStorage.getItem(k)); }catch(e){ return null; } }
+function distM(a1,o1,a2,o2){ const k=Math.cos((a1+a2)/2*Math.PI/180); return Math.hypot((o2-o1)*111320*k, (a2-a1)*110574); }
+function esc(s){ return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+function toXY(lat,lon){
+  if(!S.origin) S.origin = {lat, lon, k:Math.cos(lat*Math.PI/180)};
+  return { x:(lon-S.origin.lon)*111320*S.origin.k, y:(lat-S.origin.lat)*110574 };
+}
+// línea perpendicular a la marcha, centrada en un punto
+function lineAt(lat, lon, hdg, w){
+  const h = hdg*Math.PI/180, nx = Math.cos(h), ny = -Math.sin(h), half = w/2;
+  const dLat = ny*half/110574, dLon = nx*half/(111320*Math.cos(lat*Math.PI/180));
+  return {a:[lat+dLat, lon+dLon], b:[lat-dLat, lon-dLon], hdg};
+}
+function segX(p,q,a,b){
+  const rx=q.x-p.x, ry=q.y-p.y, sx=b.x-a.x, sy=b.y-a.y;
+  const den = rx*sy - ry*sx;
+  if(Math.abs(den) < 1e-9) return null;
+  const ax=a.x-p.x, ay=a.y-p.y;
+  const t = (ax*sy - ay*sx)/den, u = (ax*ry - ay*rx)/den;
+  return (t>=0 && t<=1 && u>=0 && u<=1) ? t : null;
+}
+// fracción del tramo prev→p en la que se cruza la línea (o null)
+function crossT(prev, p, l){
+  const a = toXY(l.a[0], l.a[1]), b = toXY(l.b[0], l.b[1]);
+  const c = segX(prev, p, a, b);
+  if(c === null) return null;
+  if(l.hdg != null){
+    const h = l.hdg*Math.PI/180;
+    if((p.x-prev.x)*Math.sin(h) + (p.y-prev.y)*Math.cos(h) <= 0) return null; // sentido contrario
+  }
+  return c;
+}
+function timeAt(arr, d){
+  if(!arr || arr.length<2 || d > arr[arr.length-1][0]) return null;
+  let lo=0, hi=arr.length-1;
+  while(lo<hi){ const m=(lo+hi)>>1; if(arr[m][0] < d) lo=m+1; else hi=m; }
+  if(lo===0) return arr[0][1];
+  const [d0,t0]=arr[lo-1], [d1,t1]=arr[lo];
+  return d1===d0 ? t1 : t0 + (t1-t0)*(d-d0)/(d1-d0);
+}
+function nSeg(){ return C.cur && C.cur.sectors.length ? C.cur.sectors.length + 1 : 0; }
+function bestSectors(n){
+  const bs = new Array(n).fill(null);
+  for(const l of S.laps) if(l.secs && l.secs.length === n) l.secs.forEach((s,i) => { if(s!=null && (bs[i]==null || s < bs[i])) bs[i] = s; });
+  return bs;
+}
+
+/* ---------- motor de vueltas ---------- */
+function onSample(s){  // s = {t (ms), lat, lon, spd m/s|null, hdg grados|null}
+  if(!isFinite(s.lat) || !isFinite(s.lon)) return;
+  const p = toXY(s.lat, s.lon); p.t = s.t;
+  const prev = S.prev;
+  if(prev && p.t <= prev.t) return;
+
+  S.hzT.push(p.t); while(S.hzT.length && p.t - S.hzT[0] >= 1000) S.hzT.shift();
+  S.lastWall = performance.now();
+  S.lastLL = {lat:s.lat, lon:s.lon};
+  if(!S.detected){ S.detected = true; autoDetect(s.lat, s.lon); }
+
+  if(prev){
+    const dx=p.x-prev.x, dy=p.y-prev.y, d=Math.hypot(dx,dy);
+    if(d > 150){ S.prev = p; return; }               // salto raro de GPS
+    const spd = (s.spd!=null && isFinite(s.spd)) ? s.spd : d/((p.t-prev.t)/1000);
+    S.lastSpd = spd;
+    if(s.hdg!=null && isFinite(s.hdg) && spd>2) S.lastHeading = s.hdg;
+    else if(d > 0.5) S.lastHeading = (Math.atan2(dx,dy)*180/Math.PI + 360) % 360;
+
+    const circ = C.cur;
+    // parciales: se buscan en orden; si uno se pierde, se marca como nulo
+    if(circ && S.lapStart!=null && S.splits.length < circ.sectors.length){
+      for(let j = S.splits.length; j < circ.sectors.length; j++){
+        const c = crossT(prev, p, circ.sectors[j]);
+        if(c !== null){
+          const split = prev.t + c*(p.t-prev.t) - S.lapStart;
+          while(S.splits.length < j){ S.splits.push(null); S.curSecs.push(null); }
+          const last = S.splits.length ? S.splits[S.splits.length-1] : 0;
+          const secT = last==null ? null : split - last;
+          S.splits.push(split); S.curSecs.push(secT);
+          sectorDone(j, secT);
+          break;
+        }
+      }
+    }
+    let crossed = false;
+    if(circ && circ.finish){
+      const c = crossT(prev, p, circ.finish);
+      if(c !== null){
+        const tc = prev.t + c*(p.t-prev.t);
+        if(S.lapStart==null){
+          startLap(tc, d*(1-c), p.t); crossed = true; flashMsg('SALIDA', 'VUELTA 1', '¡Vamos!');
+        } else {
+          const lt = tc - S.lapStart;
+          if(lt >= (+$('minlap').value)*1000){
+            S.lapSamples.push([S.lapDist + d*c, lt]);
+            let secs = null;
+            if(circ.sectors.length && S.splits.length === circ.sectors.length && !S.curSecs.includes(null)){
+              secs = S.curSecs.concat([lt - S.splits[S.splits.length-1]]);
+            }
+            addLap(lt, Math.max(S.lapVmax, spd*3.6), S.lapSamples, secs);
+            startLap(tc, d*(1-c), p.t); crossed = true;
+          }
+        }
+      }
+    }
+    if(!crossed){
+      S.lapDist += d;
+      if(S.lapStart!=null) S.lapSamples.push([S.lapDist, p.t - S.lapStart]);
+    }
+    S.lapVmax = Math.max(S.lapVmax, spd*3.6);
+
+    S.delta = null;
+    if(S.lapStart!=null && S.bestIdx>=0){
+      const bt = timeAt(S.laps[S.bestIdx].samples, S.lapDist);
+      if(bt!=null) S.delta = (p.t - S.lapStart) - bt;
+    }
+  }
+  S.prev = p;
+  if(S.gpx.length < 400000) S.gpx.push([s.lat, s.lon, s.t]);
+  S.mapBuf.push([s.lat, s.lon]);
+}
+function startLap(tc, rem, pt){
+  S.lapStart = tc; S.lapDist = rem; S.lapVmax = 0;
+  S.lapSamples = [[0,0],[rem, pt-tc]]; S.splits = []; S.curSecs = [];
+  Map_.newLap();
+}
+function sectorDone(i, t){
+  if(t == null) return;
+  const bs = bestSectors(nSeg())[i];
+  flashMsg(fmtS(t), 'PARCIAL ' + (i+1), bs==null ? 'Primer parcial' : fmtD(t-bs), bs==null ? null : t-bs, 1600);
+}
+function addLap(time, vmax, samples, secs){
+  const lap = {n:S.laps.length+1, time, vmax, samples, secs};
+  const prevBest = S.bestIdx>=0 ? S.laps[S.bestIdx] : null;
+  const delta = prevBest ? time - prevBest.time : null;
+  S.laps.push(lap);
+  if(!prevBest || time < prevBest.time){ if(prevBest) prevBest.samples = null; S.bestIdx = S.laps.length-1; }
+  else lap.samples = null;
+  saveSession(); renderLaps();
+  flashMsg(fmt(time), 'VUELTA ' + lap.n, prevBest ? fmtD(delta) : 'Primera vuelta', delta);
+  try{ navigator.vibrate && navigator.vibrate([120,60,120]); }catch(e){}
+}
+
+/* ---------- circuitos ---------- */
+function saveCircuits(){ store('lt_circuits', C.list); store('lt_cur', C.cur && !C.cur.temp ? C.cur.id : null); }
+function newCircuit(name, lat, lon){
+  const c = {id:Date.now().toString(36) + Math.random().toString(36).slice(2,5), name, center:[lat,lon], finish:null, sectors:[]};
+  C.list.push(c); selectCircuit(c); saveCircuits(); return c;
+}
+function selectCircuit(c, fly){
+  C.cur = c; S.lapStart = null; S.delta = null; S.splits = []; S.curSecs = [];
+  if(!c?.temp) saveCircuits();
+  renderCircuitUI(); renderLaps(); Map_.drawLines();
+  if(fly && c) Map_.view(c.center, 16);
+}
+function nearestSaved(lat, lon, maxM){
+  let best = null, bd = maxM;
+  for(const c of C.list){ const d = distM(lat, lon, c.center[0], c.center[1]); if(d < bd){ bd = d; best = c; } }
+  return best;
+}
+function presetNear(lat, lon){
+  for(const p of PRESETS) if(distM(lat, lon, p[1], p[2]) < 4000) return p[0];
+  return null;
+}
+function autoDetect(lat, lon){
+  if(C.cur?.temp) return;
+  const near = nearestSaved(lat, lon, 4000);
+  if(near){ if(near !== C.cur){ selectCircuit(near, false); msg('Circuito reconocido: ' + near.name); } }
+  else newCircuit(presetNear(lat, lon) || 'Circuito ' + new Date().toLocaleDateString('es-ES'), lat, lon);
+  Map_.view([lat, lon], 16);
+}
+function ensureCircuit(lat, lon){
+  if(C.cur) return C.cur;
+  return newCircuit(presetNear(lat, lon) || 'Mi circuito', lat, lon);
+}
+function renderCircuitUI(){
+  const sel = $('circSel');
+  const list = C.cur?.temp ? [C.cur].concat(C.list) : C.list;
+  sel.innerHTML = list.length ? list.map(c => `<option value="${c.id||'temp'}" ${c===C.cur?'selected':''}>${esc(c.name)}</option>`).join('')
+                              : '<option value="">— Ningún circuito guardado —</option>';
+  $('cname').value = C.cur ? C.cur.name : '';
+  $('cname').disabled = !C.cur || !!C.cur.temp;
+}
+$('circSel').onchange = e => { const c = C.list.find(x => x.id === e.target.value); if(c) selectCircuit(c, true); };
+$('cname').onchange = e => { if(C.cur && !C.cur.temp){ C.cur.name = e.target.value.trim() || C.cur.name; saveCircuits(); renderCircuitUI(); } };
+let delArmed = false;
+$('bDelCirc').onclick = () => {
+  if(!C.cur || C.cur.temp) return;
+  if(!delArmed){ delArmed = true; msg('Toca 🗑 otra vez para borrar "' + C.cur.name + '".'); setTimeout(() => delArmed = false, 3000); return; }
+  delArmed = false; C.list = C.list.filter(c => c !== C.cur); C.cur = C.list[0] || null;
+  saveCircuits(); selectCircuit(C.cur, true); msg('Circuito borrado.');
+};
+
+// búsqueda en el mapa (OpenStreetMap)
+async function findPlace(){
+  const q = $('q').value.trim(); if(!q) return;
+  msg('Buscando…'); $('results').innerHTML = '';
+  try{
+    const r = await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=5&accept-language=es&q=' + encodeURIComponent(q));
+    const js = await r.json();
+    if(!js.length){ msg('No he encontrado nada. Prueba con otro nombre.'); return; }
+    msg('Elige el resultado:');
+    js.forEach(it => {
+      const b = document.createElement('button'); b.textContent = it.display_name;
+      b.onclick = () => {
+        const lat = +it.lat, lon = +it.lon; $('results').innerHTML = ''; $('q').value = '';
+        const near = nearestSaved(lat, lon, 4000);
+        if(near) selectCircuit(near, false);
+        else newCircuit(presetNear(lat, lon) || it.display_name.split(',')[0], lat, lon);
+        Map_.view([lat, lon], 16);
+        msg('Circuito listo. Ahora marca la meta y los parciales en el mapa.');
+      };
+      $('results').appendChild(b);
+    });
+  }catch(e){ msg('Sin conexión para buscar.'); }
+}
+$('bFind').onclick = findPlace;
+$('q').addEventListener('keydown', e => { if(e.key === 'Enter') findPlace(); });
+
+/* ---------- mapa (Leaflet) ---------- */
+const Map_ = (() => {
+  const noop = { view(){}, drawLines(){}, newLap(){}, flush(){}, fit(){} };
+  if(!window.L){ $('map').innerHTML = '<p style="padding:20px;color:#8b96a3;text-align:center">Mapa no disponible sin conexión. El cronómetro funciona igual.</p>'; return noop; }
+  const map = L.map('map', {preferCanvas:true, zoomControl:true}).setView([40.2, -3.7], 5);
+  const sat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {maxZoom:20, maxNativeZoom:18, attribution:'Imágenes © Esri'});
+  const osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom:20, maxNativeZoom:19, attribution:'© OpenStreetMap'});
+  let satOn = true; sat.addTo(map);
+  const linesLayer = L.layerGroup().addTo(map);
+  const oldLaps = L.layerGroup().addTo(map);
+  let curLine = L.polyline([], {color:'#ffcc00', weight:3, opacity:.95}).addTo(map);
+  const me = L.circleMarker([0,0], {radius:7, color:'#111', weight:2, fillColor:'#ffcc00', fillOpacity:1});
+  let follow = true, drawMode = null, drawPts = [], tmp = null;
+
+  map.on('dragstart', () => { follow = false; $('mFollow').classList.remove('act'); });
+  $('mFollow').onclick = () => { follow = true; $('mFollow').classList.add('act'); if(S.lastLL) map.setView([S.lastLL.lat, S.lastLL.lon], Math.max(map.getZoom(), 16)); };
+  $('mLayer').onclick = () => {
+    satOn = !satOn; if(satOn){ map.removeLayer(osm); sat.addTo(map); } else { map.removeLayer(sat); osm.addTo(map); }
+    $('mLayer').textContent = satOn ? '🗺 Mapa' : '🛰 Satélite';
+  };
+  $('mFit').onclick = () => fit();
+  function fit(){
+    const pts = [];
+    if(C.cur){ if(C.cur.finish) pts.push(C.cur.finish.a, C.cur.finish.b); C.cur.sectors.forEach(l => pts.push(l.a, l.b)); }
+    curLine.getLatLngs().forEach(ll => pts.push([ll.lat, ll.lng]));
+    if(pts.length > 1){ follow = false; $('mFollow').classList.remove('act'); map.fitBounds(pts, {padding:[30,30], maxZoom:18}); }
+    else if(C.cur) map.setView(C.cur.center, 16);
+  }
+  function setDraw(mode){
+    drawMode = mode; drawPts = []; if(tmp){ map.removeLayer(tmp); tmp = null; }
+    $('mFinish').classList.toggle('act', mode === 'finish');
+    $('mSector').classList.toggle('act', mode === 'sector');
+    if(mode){ follow = false; $('mFollow').classList.remove('act'); msg('Toca un lado de la pista en el mapa…'); }
+  }
+  $('mFinish').onclick = () => setDraw(drawMode === 'finish' ? null : 'finish');
+  $('mSector').onclick = () => setDraw(drawMode === 'sector' ? null : 'sector');
+  $('mUndo').onclick = () => {
+    if(C.cur && C.cur.sectors.length){ C.cur.sectors.pop(); if(!C.cur.temp) saveCircuits(); drawLines(); renderLaps(); msg('Último parcial quitado.'); }
+    else msg('No hay parciales que quitar.');
+  };
+  map.on('click', e => {
+    if(!drawMode) return;
+    drawPts.push([e.latlng.lat, e.latlng.lng]);
+    if(drawPts.length === 1){ tmp = L.circleMarker(e.latlng, {radius:6, color:'#fff', fillColor:'#ef4444', fillOpacity:1}).addTo(map); msg('Ahora toca el otro lado de la pista.'); return; }
+    const circ = ensureCircuit(drawPts[0][0], drawPts[0][1]);
+    const l = {a:drawPts[0], b:drawPts[1], hdg:null};
+    if(drawMode === 'finish'){ circ.finish = l; S.lapStart = null; msg('Meta guardada.'); }
+    else { circ.sectors.push(l); msg('Parcial ' + circ.sectors.length + ' guardado. Puedes añadir más en orden de recorrido.'); }
+    if(!circ.temp) saveCircuits();
+    const mode = drawMode; setDraw(null); drawLines(); renderLaps();
+    if(mode === 'sector') setDraw('sector'), msg('Parcial ' + circ.sectors.length + ' guardado. Toca otro o pulsa de nuevo el botón para terminar.');
+  });
+  function drawLines(){
+    linesLayer.clearLayers();
+    if(!C.cur) return;
+    const add = (l, color, label) => L.polyline([l.a, l.b], {color, weight:6, opacity:1}).addTo(linesLayer)
+      .bindTooltip(label, {permanent:true, direction:'top', className:'lbl-line'});
+    if(C.cur.finish) add(C.cur.finish, '#ef4444', 'META');
+    C.cur.sectors.forEach((l, i) => add(l, '#38bdf8', 'P' + (i+1)));
+  }
+  function newLap(){
+    if(curLine.getLatLngs().length){
+      curLine.setStyle({color:'#9aa4b1', weight:2, opacity:.5}); oldLaps.addLayer(curLine);
+      const ls = oldLaps.getLayers(); if(ls.length > 4) oldLaps.removeLayer(ls[0]);
+      curLine = L.polyline([], {color:'#ffcc00', weight:3, opacity:.95}).addTo(map);
+    }
+  }
+  function flush(){
+    if(!S.mapBuf.length) return;
+    const last = S.mapBuf[S.mapBuf.length-1];
+    S.mapBuf.forEach(ll => curLine.addLatLng(ll)); S.mapBuf = [];
+    me.setLatLng(last); if(!map.hasLayer(me)) me.addTo(map);
+    if(follow && !drawMode) map.panTo(last, {animate:false});
+  }
+  function view(c, z){ map.setView(c, z); }
+  function clearTrack(){ oldLaps.clearLayers(); curLine.setLatLngs([]); if(map.hasLayer(me)) map.removeLayer(me); }
+  return { view, drawLines, newLap, flush, fit, clearTrack };
+})();
+
+/* ---------- interfaz ---------- */
+let flashTimer = null;
+function flashMsg(big, label, sub, d, ms){
+  $('fT').textContent = big; $('fL').textContent = label;
+  const fd = $('fD'); fd.textContent = sub; fd.className = 'delta' + (d==null ? '' : d<0 ? ' neg' : ' pos');
+  $('flash').classList.add('show');
+  clearTimeout(flashTimer); flashTimer = setTimeout(() => $('flash').classList.remove('show'), ms || 3000);
+}
+$('flash').onclick = () => $('flash').classList.remove('show');
+
+function renderLaps(){
+  const tb = $('laps'), n = nSeg(), bs = bestSectors(n);
+  if(!S.laps.length){ tb.innerHTML = '<tr><td colspan="4" class="empty">Aún no hay vueltas</td></tr>'; }
+  else {
+    const best = S.laps[S.bestIdx].time;
+    tb.innerHTML = S.laps.slice().reverse().map(l => {
+      const isB = l.time === best;
+      const sl = l.secs ? '<div class="sl">' + l.secs.map((s,i) => `<span class="${n===l.secs.length && s===bs[i]?'pb':''}">S${i+1} ${fmtS(s)}</span>`).join(' · ') + '</div>' : '';
+      return `<tr class="${isB?'best':''}"><td>${l.n}${isB?' ★':''}</td><td>${fmt(l.time)}${sl}</td><td>${isB?'—':fmtD(l.time-best)}</td><td>${Math.round(l.vmax)}</td></tr>`;
+    }).join('');
+  }
+  $('last').textContent = S.laps.length ? fmt(S.laps[S.laps.length-1].time) : '—';
+  $('best').textContent = S.bestIdx>=0 ? fmt(S.laps[S.bestIdx].time) : '—';
+  $('ideal').textContent = n && bs.every(x => x!=null) ? fmt(bs.reduce((a,b) => a+b, 0)) : '—';
+}
+function renderSecs(now){
+  const n = nSeg(), box = $('secs');
+  if(!n){ box.innerHTML = ''; return; }
+  const bs = bestSectors(n), out = [];
+  for(let i=0; i<n; i++){
+    let cls = 'sp', top = 'S' + (i+1), sub = '—';
+    if(S.lapStart != null && i < S.curSecs.length){
+      const t = S.curSecs[i];
+      if(t != null){ sub = fmtS(t); if(bs[i]!=null){ cls += t <= bs[i] ? ' pb' : ' slow'; top += ' ' + fmtD(t - bs[i]); } else cls += ' pb'; }
+    } else if(S.lapStart != null && i === S.curSecs.length && S.prev){
+      const lastSplit = S.splits.length ? S.splits[S.splits.length-1] : 0;
+      if(lastSplit != null){ const el = S.prev.t - S.lapStart + Math.min(now - S.lastWall, 1200)*S.rate - lastSplit; sub = fmtS(el); }
+      cls += ' run';
+    } else if(bs[i] != null) sub = fmtS(bs[i]);
+    out.push(`<div class="${cls}"><small>${top}</small>${sub}</div>`);
+  }
+  box.innerHTML = out.join('');
+}
+
+let lastDraw = 0, lastMap = 0;
+function frame(now){
+  requestAnimationFrame(frame);
+  if(S.lapStart!=null && S.prev){
+    $('cur').textContent = fmt(S.prev.t - S.lapStart + Math.min(now - S.lastWall, 1200)*S.rate);
+    $('lapLabel').textContent = 'Vuelta ' + (S.laps.length+1) + (C.cur ? ' · ' + C.cur.name : '');
+  } else {
+    $('cur').textContent = '0:00.00';
+    $('lapLabel').textContent = C.cur?.finish ? 'Esperando paso por meta' : 'Sin meta';
+  }
+  const de = $('delta'); de.textContent = fmtD(S.delta);
+  de.className = 'delta' + (S.delta==null ? '' : S.delta<0 ? ' neg' : ' pos');
+
+  if(now - lastDraw < 100) return;
+  lastDraw = now;
+  renderSecs(now);
+  const live = S.prev && (now - S.lastWall) < 3000;
+  $('spd').textContent = live ? Math.round(S.lastSpd*3.6) : 0;
+  const hz = live ? S.hzT.length : 0, hp = $('hz');
+  hp.textContent = hz + ' Hz'; hp.className = 'pill' + (hz>=10 ? ' on' : hz>0 ? ' warn' : '');
+  let fi = '—';
+  if(S.sats!=null) fi = S.sats + ' sat' + (S.hdop ? ' · HDOP ' + S.hdop : '');
+  else if(S.acc!=null) fi = '±' + Math.round(S.acc) + ' m';
+  $('fixInfo').textContent = fi;
+  if(now - lastMap > 500){ lastMap = now; Map_.flush(); }
+}
+
+/* ---------- sesión y exportación ---------- */
+function saveSession(){ store('lt_session', {laps:S.laps, bestIdx:S.bestIdx}); }
+function loadAll(){
+  C.list = load('lt_circuits') || [];
+  const curId = load('lt_cur'); C.cur = C.list.find(c => c.id === curId) || C.list[0] || null;
+  const s = load('lt_session');
+  if(s && Array.isArray(s.laps)){ S.laps = s.laps; S.bestIdx = s.bestIdx; }
+  renderCircuitUI(); renderLaps(); Map_.drawLines();
+  if(C.cur) Map_.view(C.cur.center, 16);
+}
+function resetLive(){
+  S.origin=null; S.prev=null; S.lapStart=null; S.lapDist=0; S.lapSamples=[]; S.splits=[]; S.curSecs=[];
+  S.hzT=[]; S.sats=null; S.hdop=null; S.acc=null; S.delta=null; S.lastSpd=0; S.detected=false; S.mapBuf=[];
+}
+let resetArmed = false;
+$('bReset').onclick = () => {
+  if(!resetArmed){ resetArmed = true; $('bReset').textContent = '¿Seguro?';
+    setTimeout(() => { resetArmed = false; $('bReset').textContent = '🗑 Nueva sesión'; }, 3000); return; }
+  resetArmed = false; $('bReset').textContent = '🗑 Nueva sesión';
+  S.laps = []; S.bestIdx = -1; S.lapStart = null; S.delta = null; S.gpx = []; S.splits = []; S.curSecs = [];
+  Map_.clearTrack(); saveSession(); renderLaps(); msg('Sesión borrada. El circuito y sus líneas se mantienen.');
+};
+function download(name, text, type){
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], {type}));
+  a.download = name; document.body.appendChild(a); a.click(); a.remove();
+}
+const stamp = () => new Date().toISOString().slice(0,16).replace(/[:T]/g,'-');
+$('bCsv').onclick = () => {
+  if(!S.laps.length){ msg('No hay vueltas que exportar.'); return; }
+  const best = S.laps[S.bestIdx].time, ns = Math.max(0, ...S.laps.map(l => l.secs ? l.secs.length : 0));
+  const head = ['vuelta','tiempo','segundos','diferencia_mejor','vmax_kmh'].concat(Array.from({length:ns}, (_,i) => 'S' + (i+1)));
+  const rows = S.laps.map(l => [l.n, fmt(l.time), (l.time/1000).toFixed(3), ((l.time-best)/1000).toFixed(3), Math.round(l.vmax)]
+    .concat(Array.from({length:ns}, (_,i) => l.secs && l.secs[i]!=null ? (l.secs[i]/1000).toFixed(3) : '')).join(';'));
+  download('tanda_' + stamp() + '.csv', [head.join(';')].concat(rows).join('\n'), 'text/csv');
+};
+$('bGpx').onclick = () => {
+  if(S.gpx.length < 2){ msg('Aún no hay trazado grabado.'); return; }
+  const name = esc(C.cur ? C.cur.name : 'Tanda');
+  const wpt = [];
+  if(C.cur?.finish){ const f = C.cur.finish; wpt.push(`<wpt lat="${(f.a[0]+f.b[0])/2}" lon="${(f.a[1]+f.b[1])/2}"><name>META</name></wpt>`); }
+  (C.cur?.sectors || []).forEach((l,i) => wpt.push(`<wpt lat="${(l.a[0]+l.b[0])/2}" lon="${(l.a[1]+l.b[1])/2}"><name>Parcial ${i+1}</name></wpt>`));
+  const pts = S.gpx.map(p => `<trkpt lat="${p[0].toFixed(7)}" lon="${p[1].toFixed(7)}"><time>${new Date(p[2]).toISOString()}</time></trkpt>`).join('\n');
+  download('tanda_' + stamp() + '.gpx',
+    `<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="JCB Laptimer" xmlns="http://www.topografix.com/GPX/1/1">\n${wpt.join('\n')}\n<trk><name>${name}</name><trkseg>\n${pts}\n</trkseg></trk>\n</gpx>`,
+    'application/gpx+xml');
+};
+function markHere(kind){
+  if(!S.lastLL || S.lastHeading==null){ msg('Necesito GPS y que la moto esté en movimiento para saber la dirección.'); return; }
+  const circ = ensureCircuit(S.lastLL.lat, S.lastLL.lon);
+  const l = lineAt(S.lastLL.lat, S.lastLL.lon, S.lastHeading, +$('width').value);
+  if(kind === 'finish'){ circ.finish = l; S.lapStart = null; S.delta = null; msg('Meta marcada. La vuelta empieza en el próximo paso por meta.'); }
+  else { circ.sectors.push(l); msg('Parcial ' + circ.sectors.length + ' marcado.'); }
+  if(!circ.temp) saveCircuits();
+  Map_.drawLines(); renderLaps();
+}
+$('bLine').onclick = () => markHere('finish');
+$('bSecHere').onclick = () => markHere('sector');
+
+/* ---------- fuentes de GPS ---------- */
+function setSrc(name){
+  S.srcName = name; const p = $('src');
+  p.textContent = name || 'Sin GPS'; p.className = 'pill' + (name ? ' on' : '');
+  ['bUsb','bPhone','bSim'].forEach(id => $(id).classList.remove('act'));
+}
+async function stop(){
+  if(stopFn){ const f = stopFn; stopFn = null; try{ await f(); }catch(e){} }
+  if(C.cur?.temp){ selectCircuit(C.saved, true); C.saved = null; }
+  S.rate = 1; setSrc(null); resetLive(); releaseWake();
+}
+$('bStop').onclick = () => { stop(); msg('GPS parado.'); };
+async function wake(){ try{ if('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); }catch(e){} }
+function releaseWake(){ try{ wakeLock && wakeLock.release(); }catch(e){} wakeLock = null; }
+document.addEventListener('visibilitychange', () => { if(document.visibilityState==='visible' && S.srcName) wake(); });
+
+$('bPhone').onclick = async () => {
+  await stop();
+  if(!navigator.geolocation){ msg('Este navegador no da acceso al GPS.'); return; }
+  const id = navigator.geolocation.watchPosition(pos => {
+    const c = pos.coords; S.acc = c.accuracy;
+    onSample({t:pos.timestamp, lat:c.latitude, lon:c.longitude, spd:c.speed, hdg:c.heading});
+  }, err => msg('GPS móvil: ' + err.message), {enableHighAccuracy:true, maximumAge:0, timeout:15000});
+  stopFn = () => navigator.geolocation.clearWatch(id);
+  setSrc('GPS móvil'); $('bPhone').classList.add('act'); wake();
+  msg('GPS del móvil activo (~1 Hz). Para tiempos precisos usa el receptor USB.');
+};
+
+// NMEA
+let nbuf = '';
+function feed(txt){
+  nbuf += txt; let i;
+  while((i = nbuf.indexOf('\n')) >= 0){
+    const line = nbuf.slice(0,i).trim(); nbuf = nbuf.slice(i+1);
+    const k = line.indexOf('$'); if(k >= 0) nmea(line.slice(k));
+  }
+  if(nbuf.length > 8192) nbuf = '';
+}
+function nmea(line){
+  const star = line.indexOf('*'); if(star < 0) return;
+  let cs = 0; for(let k=1; k<star; k++) cs ^= line.charCodeAt(k);
+  if(parseInt(line.slice(star+1, star+3), 16) !== cs) return;
+  const f = line.slice(1, star).split(','), type = f[0].slice(2);
+  if(type === 'GGA'){ S.sats = +f[7] || 0; S.hdop = f[8] || null; }
+  else if(type === 'RMC'){
+    if(f[2] !== 'A'){ msg('Receptor conectado. Buscando satélites… (ponlo con vista al cielo)'); return; }
+    onSample({t:nmeaTime(f[1], f[9]), lat:dm(f[3],f[4]), lon:dm(f[5],f[6]), spd: f[7] ? +f[7]*0.514444 : null, hdg: f[8]!=='' ? +f[8] : null});
+  }
+}
+function dm(v,h){
+  if(!v) return NaN; const dot = v.indexOf('.'), cut = (dot<0 ? v.length : dot) - 2;
+  let r = +v.slice(0,cut) + (+v.slice(cut))/60; if(h==='S' || h==='W') r = -r; return r;
+}
+function nmeaTime(hms, dmy){
+  const hh=+hms.slice(0,2), mm=+hms.slice(2,4), ss=parseFloat(hms.slice(4));
+  const base = (dmy && dmy.length===6) ? Date.UTC(2000 + +dmy.slice(4,6), +dmy.slice(2,4)-1, +dmy.slice(0,2)) : Date.UTC(2000,0,1);
+  return base + Math.round(((hh*60+mm)*60+ss)*1000);
+}
+
+// Receptor USB: Web Serial si existe, si no WebUSB (CDC-ACM / CP210x)
+$('bUsb').onclick = async () => {
+  await stop(); nbuf = '';
+  try{
+    if('serial' in navigator){
+      try{
+        const port = await navigator.serial.requestPort();
+        await port.open({baudRate:115200});
+        usbStarted('Web Serial'); readSerial(port); return;
+      }catch(e){ if(e.name === 'NotFoundError' && !navigator.usb) throw e; if(e.name !== 'NotFoundError') console.warn(e); }
+    }
+    if(!navigator.usb){ msg('Este navegador no permite USB. Usa Chrome en Android.'); return; }
+    const dev = await navigator.usb.requestDevice({filters:[]});
+    await openUsb(dev);
+  }catch(e){
+    if(e.name === 'NotFoundError') msg('No se eligió ningún dispositivo.');
+    else msg('Error USB: ' + e.message);
+  }
+};
+function usbStarted(how){ setSrc('GPS USB'); $('bUsb').classList.add('act'); wake(); msg('Receptor conectado (' + how + '). Esperando datos…'); }
+async function readSerial(port){
+  const reader = port.readable.getReader(), dec = new TextDecoder();
+  stopFn = async () => { try{ await reader.cancel(); }catch(e){} try{ reader.releaseLock(); await port.close(); }catch(e){} };
+  try{ for(;;){ const {value, done} = await reader.read(); if(done) break; feed(dec.decode(value, {stream:true})); } }
+  catch(e){ msg('Receptor desconectado: ' + e.message); }
+}
+async function openUsb(dev){
+  await dev.open();
+  if(dev.configuration === null) await dev.selectConfiguration(1);
+  let ctrlIf = null, dataIf = null, inEp = null;
+  for(const intf of dev.configuration.interfaces){
+    const alt = intf.alternates[0];
+    if(alt.interfaceClass === 2 && ctrlIf === null) ctrlIf = intf.interfaceNumber;
+    const ep = alt.endpoints.find(e => e.direction === 'in' && e.type === 'bulk');
+    if(ep && dataIf === null){ dataIf = intf.interfaceNumber; inEp = ep.endpointNumber; }
+  }
+  if(dataIf === null) throw new Error('el receptor no tiene un canal de datos reconocible');
+  if(ctrlIf !== null){ try{ await dev.claimInterface(ctrlIf); }catch(e){} }
+  await dev.claimInterface(dataIf);
+  const baud = new Uint8Array(4); new DataView(baud.buffer).setUint32(0, 115200, true);
+  try{
+    if(ctrlIf !== null){
+      await dev.controlTransferOut({requestType:'class', recipient:'interface', request:0x20, value:0, index:ctrlIf}, new Uint8Array([...baud, 0, 0, 8]));
+      await dev.controlTransferOut({requestType:'class', recipient:'interface', request:0x22, value:0x03, index:ctrlIf});
+    } else if(dev.vendorId === 0x10C4){
+      await dev.controlTransferOut({requestType:'vendor', recipient:'interface', request:0x00, value:0x0001, index:dataIf});
+      await dev.controlTransferOut({requestType:'vendor', recipient:'interface', request:0x1E, value:0, index:dataIf}, baud);
+    }
+  }catch(e){ console.warn('init', e); }
+  let alive = true; const dec = new TextDecoder();
+  stopFn = async () => { alive = false; try{ await dev.close(); }catch(e){} };
+  usbStarted((dev.productName || 'USB') + ' · ' + dev.vendorId.toString(16) + ':' + dev.productId.toString(16));
+  (async () => {
+    try{ while(alive){ const r = await dev.transferIn(inEp, 512); if(r.data && r.data.byteLength) feed(dec.decode(r.data, {stream:true})); } }
+    catch(e){ if(alive) msg('Receptor desconectado: ' + e.message); }
+  })();
+}
+if(navigator.usb) navigator.usb.addEventListener('disconnect', () => { if(S.srcName === 'GPS USB'){ stop(); msg('Receptor USB desconectado.'); } });
+
+// Simulación: circuito ficticio a 25 Hz, x4 de velocidad, con 2 parciales
+$('bSim').onclick = async () => {
+  await stop();
+  const lat0 = 36.7085, lon0 = -6.0340, R = 330, k = Math.cos(lat0*Math.PI/180);
+  const pos = th => { const r = R*(1 + 0.22*Math.sin(2*th) + 0.12*Math.cos(3*th)); return {x:r*Math.cos(th), y:0.6*r*Math.sin(th)}; };
+  const ll = p => ({lat: lat0 + p.y/110574, lon: lon0 + p.x/(111320*k)});
+  const lineTh = th => { const a = pos(th), b = pos(th+0.001), q = ll(a); return lineAt(q.lat, q.lon, (Math.atan2(b.x-a.x, b.y-a.y)*180/Math.PI + 360) % 360, 30); };
+  C.saved = C.cur;
+  selectCircuit({temp:true, name:'Simulación', center:[lat0, lon0], finish:lineTh(0), sectors:[lineTh(2.1), lineTh(4.2)]}, true);
+  S.detected = true; S.rate = 4;
+  let th = 0.05, simT = Date.now(), lapF = 1;
+  const iv = setInterval(() => {
+    const dt = 0.04, v = (34 + 16*Math.sin(3*th + 1)) * lapF;
+    const a = pos(th), b = pos(th + 0.001), ds = Math.hypot(b.x-a.x, b.y-a.y)/0.001;
+    const thPrev = th; th += v*dt/ds; simT += dt*1000;
+    if(Math.floor(th/(2*Math.PI)) > Math.floor(thPrev/(2*Math.PI))) lapF = 0.95 + Math.random()*0.1;
+    const p = pos(th), q = ll({x:p.x + (Math.random()-.5)*0.6, y:p.y + (Math.random()-.5)*0.6});
+    S.sats = 18; S.hdop = '0.7';
+    onSample({t:simT, lat:q.lat, lon:q.lon, spd:v, hdg:null});
+  }, 10);
+  stopFn = () => clearInterval(iv);
+  setSrc('Simulación'); $('bSim').classList.add('act');
+  msg('Simulación a 25 Hz (va 4 veces más rápido), con meta y 2 parciales.');
+};
+
+loadAll();
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
