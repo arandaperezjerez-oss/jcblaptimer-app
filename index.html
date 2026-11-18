@@ -6,160 +6,270 @@
 <meta name="theme-color" content="#0b0d10">
 <meta name="mobile-web-app-capable" content="yes">
 <title>JCB Laptimer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <style>
-:root{--bg:#0b0d10;--card:#151a21;--line:#232a33;--txt:#e9eef4;--mut:#8b96a3;--acc:#ffcc00;--ok:#22c55e;--bad:#ef4444;--pb:#c084fc;--sec:#38bdf8}
+:root{
+  --bg:#0b0d10;--card:#13171d;--card2:#1a2028;--line:#252c35;--txt:#eef2f6;--mut:#8a95a2;
+  --acc:#ffcc00;--ok:#22c55e;--bad:#ef4444;--pb:#c084fc;--sec:#38bdf8;
+  --r:14px;--gap:12px;
+  --font:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;background:var(--bg);color:var(--txt);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-body{padding:calc(env(safe-area-inset-top) + 4px) 12px calc(env(safe-area-inset-bottom) + 20px);max-width:640px;margin:0 auto}
-header{display:flex;justify-content:space-between;align-items:center;padding:8px 0 10px;gap:8px}
-.brand{font-weight:900;letter-spacing:1px;font-size:18px}.brand span{color:var(--acc)}
+html,body{margin:0;background:var(--bg);color:var(--txt);font-family:var(--font);font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
+body{padding:calc(env(safe-area-inset-top) + 6px) 14px calc(env(safe-area-inset-bottom) + 24px);max-width:640px;margin:0 auto}
+button,select,input{font-family:inherit;font-variant-numeric:inherit}
+svg.i{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+svg.f{fill:currentColor;stroke:none}
+
+/* cabecera */
+header{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:6px 0 12px}
+.brand{font-weight:800;font-size:18px;letter-spacing:.5px;white-space:nowrap}
+.brand span{color:var(--acc)}
 .pills{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
-.pill{font-size:12px;padding:4px 9px;border-radius:999px;background:var(--card);border:1px solid var(--line);color:var(--mut);white-space:nowrap}
-.pill.on{color:var(--ok);border-color:#1f5131}.pill.warn{color:var(--acc);border-color:#5a4a10}
-.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:12px 14px}
-.timer{text-align:center;padding-bottom:14px}
-.lapn{color:var(--mut);font-size:14px;display:flex;justify-content:space-between;gap:8px}
-.lapn span:first-child{text-align:left}
-.big{font-variant-numeric:tabular-nums;font-size:clamp(56px,19vw,112px);font-weight:800;line-height:1.05;margin:4px 0 8px;letter-spacing:-1px}
-.delta{display:inline-block;font-variant-numeric:tabular-nums;font-weight:800;font-size:24px;padding:3px 14px;border-radius:10px;background:#222a33;color:var(--mut)}
-.delta.neg{background:#123a22;color:var(--ok)}.delta.pos{background:#3a1414;color:var(--bad)}
-.secs{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:10px}
-.sp{font-variant-numeric:tabular-nums;font-size:15px;font-weight:700;padding:5px 9px;border-radius:9px;background:#1d242d;color:var(--mut);min-width:84px}
-.sp small{display:block;font-size:11px;font-weight:600;opacity:.85}
-.sp.pb{background:#2e1a47;color:var(--pb)}.sp.slow{background:#3a3110;color:var(--acc)}.sp.run{outline:1px solid #3a4655;color:var(--txt)}
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px}
-.stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 2px;text-align:center}
-.stat b{display:block;font-size:17px;font-variant-numeric:tabular-nums;margin-top:2px}
-.stat small{color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.6px}
-#map{width:100%;height:300px;border-radius:12px;margin-top:10px;background:#1d242d;z-index:0}
-.leaflet-container{font:inherit}
-.lbl-line{background:#111c;color:#fff;border:0;border-radius:6px;font-weight:700;font-size:11px;padding:1px 5px;box-shadow:none}
+.pill{font-size:12px;font-weight:600;padding:5px 10px;border-radius:999px;background:var(--card);border:1px solid var(--line);color:var(--mut);white-space:nowrap}
+.pill.on{color:var(--ok);border-color:#1e4d2f}.pill.warn{color:var(--acc);border-color:#4d4012}
+
+/* estructura */
+.app{display:grid;gap:var(--gap)}
+.col{display:grid;gap:var(--gap);align-content:start;min-width:0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px}
+.ch{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px}
+.ch h2{margin:0;font-size:12px;font-weight:700;color:var(--mut);text-transform:uppercase;letter-spacing:.8px}
+.ch span{font-size:12px;color:var(--mut)}
+
+/* cronómetro */
+.timer{text-align:center;padding:14px 14px 16px}
+.tl{display:flex;justify-content:space-between;gap:8px;font-size:13px;font-weight:500;color:var(--mut)}
+.tl span:first-child{text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.big{font-size:clamp(60px,20vw,112px);font-weight:800;line-height:1;margin:10px 0 12px;letter-spacing:-2px}
+.big.idle{color:#3b4450}
+.delta{display:inline-block;font-weight:700;font-size:20px;padding:4px 14px;border-radius:10px;background:var(--card2);color:var(--mut)}
+.delta.neg{background:#0f3320;color:var(--ok)}.delta.pos{background:#3a1414;color:var(--bad)}
+.secs{display:grid;grid-template-columns:repeat(auto-fit,minmax(80px,1fr));gap:6px;margin-top:12px}
+.sp{font-size:15px;font-weight:700;padding:6px 4px;border-radius:10px;background:var(--card2);color:var(--mut)}
+.sp small{display:block;font-size:11px;font-weight:600;opacity:.85;margin-bottom:1px}
+.sp.pb{background:#2b1844;color:var(--pb)}.sp.slow{background:#352d0e;color:var(--acc)}.sp.run{box-shadow:inset 0 0 0 1px #3a4655;color:var(--txt)}
+
+/* controles de tanda */
+.ctrl{display:grid;grid-template-columns:1.25fr 1fr 1fr;gap:8px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:48px;padding:0 12px;border-radius:12px;border:1px solid var(--line);background:var(--card2);color:var(--txt);font-size:15px;font-weight:600;cursor:pointer;white-space:nowrap;min-width:0}
+.btn:active{transform:scale(.98)}
+.btn:disabled{opacity:.35;cursor:default;transform:none}
+.btn.sm{height:40px;font-size:13px;padding:0 10px;gap:6px}
+.btn.sm svg.i{width:16px;height:16px}
+.btn.go{background:var(--ok);border-color:var(--ok);color:#06240f}
+.btn.hold{background:#2a2410;border-color:#5c4b10;color:var(--acc)}
+.btn.end{background:#2c1214;border-color:#5e1d22;color:#fca5a5}
+.btn.acc{background:var(--acc);border-color:var(--acc);color:#141100}
+.btn.blue{background:#0c2c3f;border-color:#155e80;color:#bae6fd}
+.btn.on{box-shadow:inset 0 0 0 2px var(--ok);color:var(--ok)}
+.btn.armed{background:var(--bad);border-color:var(--bad);color:#fff}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+
+/* datos */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 4px;text-align:center}
+.stat small{display:block;color:var(--mut);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px}
+.stat b{display:block;font-size:17px;font-weight:700;margin-top:4px}
+.msg{font-size:13px;color:var(--mut);min-height:18px;padding:0 2px}
+
+/* formularios */
+.field{display:flex;gap:8px;margin-bottom:8px}
+.inp,.sel{height:40px;border-radius:10px;border:1px solid var(--line);background:var(--card2);color:var(--txt);padding:0 12px;font-size:14px;font-weight:500;min-width:0;flex:1}
+.sel{flex:none;padding:0 8px}
+.inp::placeholder{color:#5f6b78}
+.inp:disabled{opacity:.5}
+.opts{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin-top:12px;font-size:13px;color:var(--mut)}
+.opts label{display:flex;gap:8px;align-items:center}
+#results{display:grid;gap:6px;margin-bottom:8px}
+#results button{justify-content:flex-start;height:auto;min-height:40px;padding:8px 12px;white-space:normal;text-align:left;font-weight:500}
+
+/* mapa */
+#map{width:100%;height:300px;border-radius:12px;background:var(--card2);z-index:0;margin-bottom:10px}
+.leaflet-container{font-family:var(--font)}
+.leaflet-control-attribution{font-size:10px}
+.lbl-line{background:#0b0d10d9;color:#fff;border:0;border-radius:6px;font-weight:700;font-size:11px;padding:2px 6px;box-shadow:none}
 .lbl-line:before{display:none}
-.btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
-.btns3{grid-template-columns:1fr 1fr 1fr}
-button,select,input{font:inherit;font-weight:650;padding:13px 10px;border-radius:12px;border:1px solid var(--line);background:#1d242d;color:var(--txt);min-width:0}
-input{font-weight:500}
-select{padding:9px 10px}
-.sm{padding:9px 8px;font-size:14px}
-button.pri{background:var(--acc);color:#111;border-color:var(--acc)}
-button.blue{background:#0c3247;border-color:#155e80;color:#bae6fd}
-button.act{outline:2px solid var(--ok)}
-button.wide{grid-column:1/-1}
-button:active{transform:scale(.98)}
-h3{margin:20px 0 6px;font-size:13px;color:var(--mut);text-transform:uppercase;letter-spacing:.7px}
-table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
-td,th{padding:9px 6px;border-bottom:1px solid var(--line);text-align:right;font-size:16px;vertical-align:top}
-th{color:var(--mut);font-size:12px;font-weight:600}
+
+/* tablas */
+table{width:100%;border-collapse:collapse}
+td,th{padding:10px 4px;border-bottom:1px solid var(--line);text-align:right;font-size:15px;vertical-align:top}
+th{color:var(--mut);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;padding-top:0}
 td:first-child,th:first-child{text-align:left}
-tr.best>td{color:var(--acc);font-weight:800}
+tr:last-child td{border-bottom:0}
+tr.best>td{color:var(--acc);font-weight:700}
 .sl{font-size:12px;color:var(--mut);font-weight:500;margin-top:3px}
 .sl .pb{color:var(--pb);font-weight:700}
-.empty{color:var(--mut);text-align:center!important;font-size:14px}
-.msg{color:var(--mut);font-size:13px;margin-top:8px;min-height:18px}
-.row{display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap}
-.row label{color:var(--mut);font-size:13px}
-.grow{flex:1}
-#results{display:flex;flex-direction:column;gap:6px;margin-top:6px}
-#results button{text-align:left;font-weight:500;font-size:14px;padding:10px}
-details{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:16px;color:var(--mut);font-size:14px;line-height:1.45}
-details summary{color:var(--txt);font-weight:700}
-details ol{padding-left:18px;margin:8px 0}
-#flash{position:fixed;inset:0;background:rgba(0,0,0,.93);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:1000;gap:6px}
+.empty{color:var(--mut);text-align:center!important;font-size:14px;padding:16px 0!important}
+
+/* historial */
+.hist{display:grid;gap:8px}
+.hi{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.hi summary{list-style:none;cursor:pointer;display:grid;gap:2px}
+.hi summary::-webkit-details-marker{display:none}
+.hi .t1{display:flex;justify-content:space-between;gap:8px;font-weight:700;font-size:15px}
+.hi .t1 span{color:var(--mut);font-weight:500;font-size:13px}
+.hi .t2{font-size:13px;color:var(--mut)}
+.hi .t2 b{color:var(--acc);font-weight:700}
+.hi table{margin-top:8px}
+.hi td{font-size:14px;padding:7px 4px}
+
+details.help{font-size:14px;color:var(--mut);line-height:1.5}
+details.help summary{cursor:pointer;color:var(--txt);font-weight:600}
+details.help ol{padding-left:18px;margin:10px 0 0}
+details.help li{margin-bottom:6px}
+
+#flash{position:fixed;inset:0;background:rgba(5,6,8,.94);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:1000;gap:10px;text-align:center;padding:20px}
 #flash.show{display:flex}
-#flash .big{font-size:clamp(70px,23vw,150px)}
-#flash .lbl{color:var(--mut);font-size:20px;letter-spacing:2px}
+#flash .big{font-size:clamp(64px,22vw,150px);margin:0}
+#flash .lbl{color:var(--mut);font-size:16px;font-weight:700;letter-spacing:2px}
+#flash .sub2{color:var(--mut);font-size:15px}
+
+/* escritorio */
+@media (min-width:960px){
+  body{max-width:1260px;padding:18px 28px 32px}
+  header{padding:4px 0 16px}
+  .brand{font-size:22px}
+  .app{grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:16px}
+  .col{gap:16px}
+  .big{font-size:128px}
+  #map{height:520px}
+  .card{padding:18px}
+}
 </style>
 </head>
 <body>
+
+<svg width="0" height="0" style="position:absolute">
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4.5v15l13-7.5z"/></symbol>
+  <symbol id="i-pause" viewBox="0 0 24 24"><rect x="6" y="4.5" width="4" height="15" rx="1"/><rect x="14" y="4.5" width="4" height="15" rx="1"/></symbol>
+  <symbol id="i-stop" viewBox="0 0 24 24"><rect x="5.5" y="5.5" width="13" height="13" rx="2"/></symbol>
+  <symbol id="i-usb" viewBox="0 0 24 24"><path d="M12 21V5M9 8l3-3 3 3M7 10v3a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-3"/><circle cx="12" cy="20" r="1.5"/></symbol>
+  <symbol id="i-phone" viewBox="0 0 24 24"><rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18h2"/></symbol>
+  <symbol id="i-sim" viewBox="0 0 24 24"><path d="M9.5 3h5M10.5 3v6L5 19.5A1 1 0 0 0 5.9 21h12.2a1 1 0 0 0 .9-1.5L13.5 9V3M7.5 15h9"/></symbol>
+  <symbol id="i-flag" viewBox="0 0 24 24"><path d="M5 21V4M5 4h12l-2.5 4L17 12H5"/></symbol>
+  <symbol id="i-split" viewBox="0 0 24 24"><circle cx="12" cy="13.5" r="7.5"/><path d="M12 10v3.5l2.5 2M9.5 2.5h5"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></symbol>
+  <symbol id="i-layers" viewBox="0 0 24 24"><path d="m12 3 10 5-10 5L2 8z"/><path d="m2 16 10 5 10-5"/></symbol>
+  <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.5"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></symbol>
+  <symbol id="i-expand" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></symbol>
+  <symbol id="i-undo" viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3.5 6h17M9 6V4h6v2M6 6l1 14h10l1-14"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+</svg>
+
 <header>
   <div class="brand">JCB <span>LAPTIMER</span></div>
   <div class="pills"><span id="src" class="pill">Sin GPS</span><span id="hz" class="pill">0 Hz</span></div>
 </header>
 
-<section class="card timer">
-  <div class="lapn"><span id="lapLabel">Sin meta</span><span id="fixInfo">—</span></div>
-  <div class="big" id="cur">0:00.00</div>
-  <div id="delta" class="delta">±0.00</div>
-  <div id="secs" class="secs"></div>
-</section>
+<main class="app">
+  <div class="col">
+    <section class="card timer">
+      <div class="tl"><span id="lapLabel">Pulsa Empezar</span><span id="sessT">Tanda 0:00</span></div>
+      <div class="big idle" id="cur">0:00.00</div>
+      <div id="delta" class="delta">±0.00</div>
+      <div id="secs" class="secs"></div>
+    </section>
 
-<div class="stats">
-  <div class="stat"><small>Última</small><b id="last">—</b></div>
-  <div class="stat"><small>Mejor</small><b id="best">—</b></div>
-  <div class="stat"><small>Ideal</small><b id="ideal">—</b></div>
-  <div class="stat"><small>km/h</small><b id="spd">0</b></div>
-</div>
+    <div class="ctrl">
+      <button class="btn go" id="cStart"><svg class="i f"><use href="#i-play"/></svg><span id="cStartTxt">Empezar</span></button>
+      <button class="btn hold" id="cPause" disabled><svg class="i f"><use href="#i-pause"/></svg>Parar</button>
+      <button class="btn end" id="cEnd" disabled><svg class="i f"><use href="#i-stop"/></svg><span id="cEndTxt">Finalizar</span></button>
+    </div>
 
-<div class="msg" id="msg">Conecta el receptor USB o usa el GPS del móvil.</div>
+    <div class="stats">
+      <div class="stat"><small>Última</small><b id="last">—</b></div>
+      <div class="stat"><small>Mejor</small><b id="best">—</b></div>
+      <div class="stat"><small>Ideal</small><b id="ideal">—</b></div>
+      <div class="stat"><small>km/h</small><b id="spd">0</b></div>
+    </div>
+    <div class="msg" id="msg">Elige la fuente GPS y pulsa Empezar.</div>
 
-<div class="btns">
-  <button class="pri" id="bUsb">🔌 GPS USB (25 Hz)</button>
-  <button id="bPhone">📱 GPS del móvil</button>
-  <button class="pri" id="bLine">🏁 Meta aquí</button>
-  <button class="blue" id="bSecHere">⏱ Parcial aquí</button>
-  <button id="bSim">🧪 Simular</button>
-  <button id="bStop">⏹ Parar</button>
-</div>
+    <section class="card">
+      <div class="ch"><h2>Fuente GPS</h2><span>Toca la activa para desconectar</span></div>
+      <div class="g3">
+        <button class="btn sm" id="bUsb"><svg class="i"><use href="#i-usb"/></svg>USB 25 Hz</button>
+        <button class="btn sm" id="bPhone"><svg class="i"><use href="#i-phone"/></svg>Móvil</button>
+        <button class="btn sm" id="bSim"><svg class="i"><use href="#i-sim"/></svg>Simular</button>
+      </div>
+      <div class="ch" style="margin:16px 0 12px"><h2>Marcar rodando</h2><span>Al pasar por el punto</span></div>
+      <div class="g2">
+        <button class="btn sm acc" id="bLine"><svg class="i"><use href="#i-flag"/></svg>Meta aquí</button>
+        <button class="btn sm blue" id="bSecHere"><svg class="i"><use href="#i-split"/></svg>Parcial aquí</button>
+      </div>
+    </section>
 
-<h3>Circuito</h3>
-<section class="card">
-  <div class="row" style="margin-top:0">
-    <select id="circSel" class="grow"></select>
-    <button id="bDelCirc" class="sm">🗑</button>
+    <section class="card">
+      <div class="ch"><h2>Vueltas</h2><span id="lapCount">0 vueltas</span></div>
+      <table>
+        <thead><tr><th>#</th><th>Tiempo · parciales</th><th>Dif.</th><th>Vmáx</th></tr></thead>
+        <tbody id="laps"></tbody>
+      </table>
+      <div class="g2" style="margin-top:12px">
+        <button class="btn sm" id="bCsv"><svg class="i"><use href="#i-down"/></svg>CSV</button>
+        <button class="btn sm" id="bGpx"><svg class="i"><use href="#i-down"/></svg>GPX (mapas)</button>
+      </div>
+    </section>
   </div>
-  <div class="row">
-    <input id="cname" class="grow" placeholder="Nombre del circuito">
-  </div>
-  <div class="row">
-    <input id="q" class="grow" placeholder="Buscar circuito (ej. Circuito de Jerez)" enterkeyhint="search">
-    <button id="bFind" class="sm">🔍</button>
-  </div>
-  <div id="results"></div>
-  <div id="map"></div>
-  <div class="btns btns3">
-    <button id="mFinish" class="sm">🏁 Meta en mapa</button>
-    <button id="mSector" class="sm">➕ Parcial en mapa</button>
-    <button id="mUndo" class="sm">↩ Quitar parcial</button>
-    <button id="mLayer" class="sm">🗺 Mapa</button>
-    <button id="mFollow" class="sm act">📍 Seguirme</button>
-    <button id="mFit" class="sm">⤢ Ver todo</button>
-  </div>
-  <div class="row">
-    <label>Ancho línea</label>
-    <select id="width"><option>15</option><option>20</option><option selected>30</option><option>40</option><option>60</option></select>
-    <label>m · Vuelta mín.</label>
-    <select id="minlap"><option>10</option><option>20</option><option selected>30</option><option>45</option><option>60</option></select>
-    <label>s</label>
-  </div>
-</section>
 
-<h3>Vueltas</h3>
-<table>
-  <thead><tr><th>#</th><th>Tiempo / parciales</th><th>Dif.</th><th>Vmáx</th></tr></thead>
-  <tbody id="laps"><tr><td colspan="4" class="empty">Aún no hay vueltas</td></tr></tbody>
-</table>
-<div class="btns btns3">
-  <button id="bCsv" class="sm">⬇ CSV</button>
-  <button id="bGpx" class="sm">🗺 GPX</button>
-  <button id="bReset" class="sm">🗑 Nueva sesión</button>
-</div>
+  <div class="col">
+    <section class="card">
+      <div class="ch"><h2>Circuito</h2><span id="circInfo"></span></div>
+      <div class="field">
+        <select id="circSel" class="inp"></select>
+        <button class="btn sm" id="bDelCirc" title="Borrar circuito"><svg class="i"><use href="#i-trash"/></svg></button>
+      </div>
+      <div class="field"><input id="cname" class="inp" placeholder="Nombre del circuito"></div>
+      <div class="field">
+        <input id="q" class="inp" placeholder="Buscar circuito (ej. Circuito de Jerez)" enterkeyhint="search">
+        <button class="btn sm" id="bFind"><svg class="i"><use href="#i-search"/></svg></button>
+      </div>
+      <div id="results"></div>
+      <div id="map"></div>
+      <div class="g3">
+        <button class="btn sm" id="mFinish"><svg class="i"><use href="#i-flag"/></svg>Meta</button>
+        <button class="btn sm" id="mSector"><svg class="i"><use href="#i-plus"/></svg>Parcial</button>
+        <button class="btn sm" id="mUndo"><svg class="i"><use href="#i-undo"/></svg>Quitar</button>
+        <button class="btn sm" id="mLayer"><svg class="i"><use href="#i-layers"/></svg><span>Mapa</span></button>
+        <button class="btn sm on" id="mFollow"><svg class="i"><use href="#i-target"/></svg>Seguir</button>
+        <button class="btn sm" id="mFit"><svg class="i"><use href="#i-expand"/></svg>Ver todo</button>
+      </div>
+      <div class="opts">
+        <label>Ancho de línea <select id="width" class="sel inp"><option>15</option><option>20</option><option selected>30</option><option>40</option><option>60</option></select> m</label>
+        <label>Vuelta mínima <select id="minlap" class="sel inp"><option>10</option><option>20</option><option selected>30</option><option>45</option><option>60</option></select> s</label>
+      </div>
+    </section>
 
-<details>
-  <summary>Cómo usarla</summary>
-  <ol>
-    <li>Usa un móvil <b>Android con Chrome</b>. El receptor USB no funciona en iPhone (allí solo vale el GPS del móvil).</li>
-    <li><b>Prepara el circuito desde casa:</b> busca el circuito, verás la vista satélite. Pulsa <b>Meta en mapa</b> y toca los dos lados de la pista en la línea de meta. Haz lo mismo con <b>Parcial en mapa</b> para cada sector, <b>en el orden en que se recorren</b>.</li>
-    <li>También puedes marcarlas rodando: <b>Meta aquí</b> / <b>Parcial aquí</b> al pasar por el punto.</li>
-    <li>Conecta el receptor al USB‑C, ponlo en la moto mirando al cielo y pulsa <b>GPS USB</b>. Arriba debe salir <b>25 Hz</b>. Al llegar al circuito, la app lo reconoce sola y carga su meta y parciales.</li>
-    <li>Colores de parciales: <b style="color:var(--pb)">morado</b> = mejor parcial de la sesión, <b style="color:var(--acc)">amarillo</b> = más lento. <b>Ideal</b> = suma de tus mejores parciales.</li>
-    <li><b>GPX</b> exporta el trazado de la tanda para abrirlo en Google Earth, Google My Maps o cualquier app de mapas.</li>
-  </ol>
-  Con <b>Simular</b> puedes probarlo todo en casa.
-</details>
+    <section class="card">
+      <div class="ch"><h2>Historial de tandas</h2><span id="histCount"></span></div>
+      <div class="hist" id="hist"></div>
+    </section>
 
-<div id="flash"><div class="lbl" id="fL"></div><div class="big" id="fT"></div><div id="fD" class="delta"></div></div>
+    <section class="card">
+      <details class="help">
+        <summary>Cómo usarla</summary>
+        <ol>
+          <li>Móvil <b>Android con Chrome</b>. El receptor USB no funciona en iPhone (allí solo el GPS del móvil).</li>
+          <li><b>Prepara el circuito:</b> búscalo, pulsa <b>Meta</b> y toca los dos lados de la pista en el mapa. Igual con <b>Parcial</b> para cada sector, en el orden de recorrido.</li>
+          <li>Conecta el receptor y elige <b>USB 25 Hz</b>. Arriba debe salir <b>25 Hz</b> y varios satélites.</li>
+          <li><b>Empezar</b> arranca la tanda: la primera vuelta cuenta desde el primer paso por meta.</li>
+          <li><b>Parar</b> pone la tanda en pausa (por ejemplo, en boxes): la vuelta en curso no cuenta. <b>Reanudar</b> sigue en el próximo paso por meta.</li>
+          <li><b>Finalizar</b> cierra la tanda y la guarda en el historial.</li>
+          <li>Parciales: <b style="color:var(--pb)">morado</b> = mejor de la tanda, <b style="color:var(--acc)">amarillo</b> = más lento. <b>Ideal</b> = suma de tus mejores parciales.</li>
+        </ol>
+      </details>
+    </section>
+  </div>
+</main>
+
+<div id="flash"><div class="lbl" id="fL"></div><div class="big" id="fT"></div><div id="fD" class="delta"></div><div class="sub2" id="fS"></div></div>
 
 <script>
 "use strict";
@@ -178,12 +288,14 @@ const PRESETS = [
   ['Circuito do Estoril', 38.7506, -9.3942]
 ];
 const S = {
+  run:'idle', sessStart:null, sessAcc:0,
   origin:null, prev:null, lastLL:null, lastHeading:null, lastSpd:0, detected:false,
   lapStart:null, lapDist:0, lapVmax:0, lapSamples:[], splits:[], curSecs:[],
-  laps:[], bestIdx:-1, gpx:[], mapBuf:[],
+  laps:[], bestIdx:-1, gpx:[], lastGpx:[], mapBuf:[],
   lastWall:0, rate:1, hzT:[], sats:null, hdop:null, acc:null, srcName:null, delta:null
 };
 const C = { list:[], cur:null, saved:null };
+let HIST = [];
 let stopFn = null, wakeLock = null;
 
 /* ---------- utilidades ---------- */
@@ -195,17 +307,26 @@ function fmt(ms){
 }
 function fmtS(ms){ if(ms==null) return '—'; return ms < 60000 ? (ms/1000).toFixed(2) : fmt(ms); }
 function fmtD(ms){ if(ms==null) return '±0.00'; return (ms>0?'+':ms<0?'−':'±') + Math.abs(ms/1000).toFixed(2); }
+function fmtDur(ms){
+  ms = Math.max(0, ms||0); const t = Math.floor(ms/1000), h = Math.floor(t/3600), m = Math.floor(t%3600/60), s = t%60;
+  return h ? h + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0') : m + ':' + String(s).padStart(2,'0');
+}
 function msg(t){ $('msg').textContent = t; }
 function store(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
 function load(k){ try{ return JSON.parse(localStorage.getItem(k)); }catch(e){ return null; } }
 function distM(a1,o1,a2,o2){ const k=Math.cos((a1+a2)/2*Math.PI/180); return Math.hypot((o2-o1)*111320*k, (a2-a1)*110574); }
 function esc(s){ return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function armButton(btn, labelEl, armedText, action){
+  if(btn.dataset.armed){ delete btn.dataset.armed; btn.classList.remove('armed'); labelEl && (labelEl.textContent = labelEl.dataset.txt); action(); return; }
+  btn.dataset.armed = '1'; btn.classList.add('armed');
+  if(labelEl){ labelEl.dataset.txt = labelEl.textContent; labelEl.textContent = armedText; }
+  setTimeout(() => { if(btn.dataset.armed){ delete btn.dataset.armed; btn.classList.remove('armed'); if(labelEl) labelEl.textContent = labelEl.dataset.txt; } }, 3000);
+}
 
 function toXY(lat,lon){
   if(!S.origin) S.origin = {lat, lon, k:Math.cos(lat*Math.PI/180)};
   return { x:(lon-S.origin.lon)*111320*S.origin.k, y:(lat-S.origin.lat)*110574 };
 }
-// línea perpendicular a la marcha, centrada en un punto
 function lineAt(lat, lon, hdg, w){
   const h = hdg*Math.PI/180, nx = Math.cos(h), ny = -Math.sin(h), half = w/2;
   const dLat = ny*half/110574, dLon = nx*half/(111320*Math.cos(lat*Math.PI/180));
@@ -219,14 +340,13 @@ function segX(p,q,a,b){
   const t = (ax*sy - ay*sx)/den, u = (ax*ry - ay*rx)/den;
   return (t>=0 && t<=1 && u>=0 && u<=1) ? t : null;
 }
-// fracción del tramo prev→p en la que se cruza la línea (o null)
 function crossT(prev, p, l){
   const a = toXY(l.a[0], l.a[1]), b = toXY(l.b[0], l.b[1]);
   const c = segX(prev, p, a, b);
   if(c === null) return null;
   if(l.hdg != null){
     const h = l.hdg*Math.PI/180;
-    if((p.x-prev.x)*Math.sin(h) + (p.y-prev.y)*Math.cos(h) <= 0) return null; // sentido contrario
+    if((p.x-prev.x)*Math.sin(h) + (p.y-prev.y)*Math.cos(h) <= 0) return null;
   }
   return c;
 }
@@ -239,14 +359,25 @@ function timeAt(arr, d){
   return d1===d0 ? t1 : t0 + (t1-t0)*(d-d0)/(d1-d0);
 }
 function nSeg(){ return C.cur && C.cur.sectors.length ? C.cur.sectors.length + 1 : 0; }
-function bestSectors(n){
+function bestSectors(n, laps){
   const bs = new Array(n).fill(null);
-  for(const l of S.laps) if(l.secs && l.secs.length === n) l.secs.forEach((s,i) => { if(s!=null && (bs[i]==null || s < bs[i])) bs[i] = s; });
+  for(const l of (laps || S.laps)) if(l.secs && l.secs.length === n) l.secs.forEach((s,i) => { if(s!=null && (bs[i]==null || s < bs[i])) bs[i] = s; });
   return bs;
 }
+function idealOf(laps){
+  const n = Math.max(0, ...laps.map(l => l.secs ? l.secs.length : 0));
+  if(!n) return null; const bs = bestSectors(n, laps);
+  return bs.every(x => x!=null) ? bs.reduce((a,b) => a+b, 0) : null;
+}
+function nowT(){
+  const n = performance.now();
+  if(S.prev && n - S.lastWall < 3000) return S.prev.t + Math.min(n - S.lastWall, 1200)*S.rate;
+  return Date.now();
+}
+function sessionTotal(){ return Math.max(0, S.sessAcc + (S.run==='running' && S.sessStart!=null ? nowT() - S.sessStart : 0)); }
 
 /* ---------- motor de vueltas ---------- */
-function onSample(s){  // s = {t (ms), lat, lon, spd m/s|null, hdg grados|null}
+function onSample(s){
   if(!isFinite(s.lat) || !isFinite(s.lon)) return;
   const p = toXY(s.lat, s.lon); p.t = s.t;
   const prev = S.prev;
@@ -259,45 +390,45 @@ function onSample(s){  // s = {t (ms), lat, lon, spd m/s|null, hdg grados|null}
 
   if(prev){
     const dx=p.x-prev.x, dy=p.y-prev.y, d=Math.hypot(dx,dy);
-    if(d > 150){ S.prev = p; return; }               // salto raro de GPS
+    if(d > 150){ S.prev = p; return; }
     const spd = (s.spd!=null && isFinite(s.spd)) ? s.spd : d/((p.t-prev.t)/1000);
     S.lastSpd = spd;
     if(s.hdg!=null && isFinite(s.hdg) && spd>2) S.lastHeading = s.hdg;
     else if(d > 0.5) S.lastHeading = (Math.atan2(dx,dy)*180/Math.PI + 360) % 360;
 
     const circ = C.cur;
-    // parciales: se buscan en orden; si uno se pierde, se marca como nulo
-    if(circ && S.lapStart!=null && S.splits.length < circ.sectors.length){
-      for(let j = S.splits.length; j < circ.sectors.length; j++){
-        const c = crossT(prev, p, circ.sectors[j]);
-        if(c !== null){
-          const split = prev.t + c*(p.t-prev.t) - S.lapStart;
-          while(S.splits.length < j){ S.splits.push(null); S.curSecs.push(null); }
-          const last = S.splits.length ? S.splits[S.splits.length-1] : 0;
-          const secT = last==null ? null : split - last;
-          S.splits.push(split); S.curSecs.push(secT);
-          sectorDone(j, secT);
-          break;
+    let crossed = false;
+    if(S.run === 'running' && circ){
+      if(S.lapStart!=null && S.splits.length < circ.sectors.length){
+        for(let j = S.splits.length; j < circ.sectors.length; j++){
+          const c = crossT(prev, p, circ.sectors[j]);
+          if(c !== null){
+            const split = prev.t + c*(p.t-prev.t) - S.lapStart;
+            while(S.splits.length < j){ S.splits.push(null); S.curSecs.push(null); }
+            const last = S.splits.length ? S.splits[S.splits.length-1] : 0;
+            const secT = last==null ? null : split - last;
+            S.splits.push(split); S.curSecs.push(secT);
+            sectorDone(j, secT);
+            break;
+          }
         }
       }
-    }
-    let crossed = false;
-    if(circ && circ.finish){
-      const c = crossT(prev, p, circ.finish);
-      if(c !== null){
-        const tc = prev.t + c*(p.t-prev.t);
-        if(S.lapStart==null){
-          startLap(tc, d*(1-c), p.t); crossed = true; flashMsg('SALIDA', 'VUELTA 1', '¡Vamos!');
-        } else {
-          const lt = tc - S.lapStart;
-          if(lt >= (+$('minlap').value)*1000){
-            S.lapSamples.push([S.lapDist + d*c, lt]);
-            let secs = null;
-            if(circ.sectors.length && S.splits.length === circ.sectors.length && !S.curSecs.includes(null)){
-              secs = S.curSecs.concat([lt - S.splits[S.splits.length-1]]);
+      if(circ.finish){
+        const c = crossT(prev, p, circ.finish);
+        if(c !== null){
+          const tc = prev.t + c*(p.t-prev.t);
+          if(S.lapStart==null){
+            startLap(tc, d*(1-c), p.t); crossed = true; flashMsg('SALIDA', 'VUELTA ' + (S.laps.length+1), '¡Vamos!');
+          } else {
+            const lt = tc - S.lapStart;
+            if(lt >= (+$('minlap').value)*1000){
+              S.lapSamples.push([S.lapDist + d*c, lt]);
+              let secs = null;
+              if(circ.sectors.length && S.splits.length === circ.sectors.length && !S.curSecs.includes(null))
+                secs = S.curSecs.concat([lt - S.splits[S.splits.length-1]]);
+              addLap(lt, Math.max(S.lapVmax, spd*3.6), S.lapSamples, secs);
+              startLap(tc, d*(1-c), p.t); crossed = true;
             }
-            addLap(lt, Math.max(S.lapVmax, spd*3.6), S.lapSamples, secs);
-            startLap(tc, d*(1-c), p.t); crossed = true;
           }
         }
       }
@@ -307,7 +438,6 @@ function onSample(s){  // s = {t (ms), lat, lon, spd m/s|null, hdg grados|null}
       if(S.lapStart!=null) S.lapSamples.push([S.lapDist, p.t - S.lapStart]);
     }
     S.lapVmax = Math.max(S.lapVmax, spd*3.6);
-
     S.delta = null;
     if(S.lapStart!=null && S.bestIdx>=0){
       const bt = timeAt(S.laps[S.bestIdx].samples, S.lapDist);
@@ -323,10 +453,11 @@ function startLap(tc, rem, pt){
   S.lapSamples = [[0,0],[rem, pt-tc]]; S.splits = []; S.curSecs = [];
   Map_.newLap();
 }
+function cancelLap(){ S.lapStart = null; S.delta = null; S.splits = []; S.curSecs = []; S.lapSamples = []; }
 function sectorDone(i, t){
   if(t == null) return;
   const bs = bestSectors(nSeg())[i];
-  flashMsg(fmtS(t), 'PARCIAL ' + (i+1), bs==null ? 'Primer parcial' : fmtD(t-bs), bs==null ? null : t-bs, 1600);
+  flashMsg(fmtS(t), 'PARCIAL ' + (i+1), bs==null ? 'Primer parcial' : fmtD(t-bs), bs==null ? null : t-bs, '', 1600);
 }
 function addLap(time, vmax, samples, secs){
   const lap = {n:S.laps.length+1, time, vmax, samples, secs};
@@ -335,9 +466,55 @@ function addLap(time, vmax, samples, secs){
   S.laps.push(lap);
   if(!prevBest || time < prevBest.time){ if(prevBest) prevBest.samples = null; S.bestIdx = S.laps.length-1; }
   else lap.samples = null;
-  saveSession(); renderLaps();
+  saveSession(); renderLaps(); updateCtrl();
   flashMsg(fmt(time), 'VUELTA ' + lap.n, prevBest ? fmtD(delta) : 'Primera vuelta', delta);
   try{ navigator.vibrate && navigator.vibrate([120,60,120]); }catch(e){}
+}
+
+/* ---------- controles de tanda ---------- */
+function updateCtrl(){
+  const r = S.run;
+  $('cStart').disabled = r === 'running';
+  $('cStartTxt').textContent = r === 'paused' ? 'Reanudar' : r === 'running' ? 'En marcha' : 'Empezar';
+  $('cPause').disabled = r !== 'running';
+  $('cEnd').disabled = r === 'idle' && !S.laps.length;
+}
+async function ensureSource(){
+  if(S.srcName) return true;
+  const can = ('serial' in navigator) || !!navigator.usb;
+  const pref = load('lt_src') || (can ? 'usb' : 'phone');
+  if(pref === 'usb' && can) await startUsb();
+  else if(pref === 'sim') await startSim();
+  else await startPhone();
+  return !!S.srcName;
+}
+$('cStart').onclick = async () => {
+  if(!(await ensureSource())){ msg('Sin GPS: elige una fuente en "Fuente GPS".'); return; }
+  const resumed = S.run === 'paused';
+  S.run = 'running'; S.sessStart = nowT(); cancelLap();
+  updateCtrl(); wake();
+  if(!C.cur?.finish) msg('Tanda en marcha, pero falta la meta: márcala en el mapa o con "Meta aquí".');
+  else msg(resumed ? 'Tanda reanudada. La vuelta empieza en el próximo paso por meta.' : 'Tanda en marcha. La vuelta 1 empieza al pasar por meta.');
+};
+$('cPause').onclick = () => {
+  if(S.run !== 'running') return;
+  S.sessAcc = sessionTotal(); S.sessStart = null; S.run = 'paused'; cancelLap();
+  updateCtrl(); msg('Tanda en pausa. La vuelta en curso no cuenta.');
+};
+$('cEnd').onclick = () => armButton($('cEnd'), $('cEndTxt'), '¿Seguro?', finishSession);
+function finishSession(){
+  const dur = sessionTotal();
+  if(S.laps.length){
+    const best = S.laps[S.bestIdx].time, ideal = idealOf(S.laps);
+    HIST.unshift({id:Date.now(), date:Date.now(), circ: C.cur ? C.cur.name : '—', dur, best, ideal,
+      laps: S.laps.map(l => ({n:l.n, time:l.time, vmax:l.vmax, secs:l.secs}))});
+    HIST = HIST.slice(0, 60); store('lt_hist', HIST);
+    flashMsg(fmt(best), 'TANDA TERMINADA', S.laps.length + (S.laps.length===1 ? ' vuelta' : ' vueltas'), null,
+      'Duración ' + fmtDur(dur) + (ideal ? ' · Ideal ' + fmt(ideal) : ''), 5000);
+  } else msg('Tanda finalizada sin vueltas.');
+  S.lastGpx = S.gpx; S.gpx = [];
+  S.laps = []; S.bestIdx = -1; S.run = 'idle'; S.sessAcc = 0; S.sessStart = null; cancelLap();
+  saveSession(); Map_.clearTrack(); stop(); renderLaps(); renderHist(); updateCtrl();
 }
 
 /* ---------- circuitos ---------- */
@@ -347,7 +524,7 @@ function newCircuit(name, lat, lon){
   C.list.push(c); selectCircuit(c); saveCircuits(); return c;
 }
 function selectCircuit(c, fly){
-  C.cur = c; S.lapStart = null; S.delta = null; S.splits = []; S.curSecs = [];
+  C.cur = c; cancelLap();
   if(!c?.temp) saveCircuits();
   renderCircuitUI(); renderLaps(); Map_.drawLines();
   if(fly && c) Map_.view(c.center, 16);
@@ -357,10 +534,7 @@ function nearestSaved(lat, lon, maxM){
   for(const c of C.list){ const d = distM(lat, lon, c.center[0], c.center[1]); if(d < bd){ bd = d; best = c; } }
   return best;
 }
-function presetNear(lat, lon){
-  for(const p of PRESETS) if(distM(lat, lon, p[1], p[2]) < 4000) return p[0];
-  return null;
-}
+function presetNear(lat, lon){ for(const p of PRESETS) if(distM(lat, lon, p[1], p[2]) < 4000) return p[0]; return null; }
 function autoDetect(lat, lon){
   if(C.cur?.temp) return;
   const near = nearestSaved(lat, lon, 4000);
@@ -368,29 +542,26 @@ function autoDetect(lat, lon){
   else newCircuit(presetNear(lat, lon) || 'Circuito ' + new Date().toLocaleDateString('es-ES'), lat, lon);
   Map_.view([lat, lon], 16);
 }
-function ensureCircuit(lat, lon){
-  if(C.cur) return C.cur;
-  return newCircuit(presetNear(lat, lon) || 'Mi circuito', lat, lon);
-}
+function ensureCircuit(lat, lon){ return C.cur || newCircuit(presetNear(lat, lon) || 'Mi circuito', lat, lon); }
 function renderCircuitUI(){
   const sel = $('circSel');
   const list = C.cur?.temp ? [C.cur].concat(C.list) : C.list;
   sel.innerHTML = list.length ? list.map(c => `<option value="${c.id||'temp'}" ${c===C.cur?'selected':''}>${esc(c.name)}</option>`).join('')
-                              : '<option value="">— Ningún circuito guardado —</option>';
+                              : '<option value="">Ningún circuito guardado</option>';
   $('cname').value = C.cur ? C.cur.name : '';
   $('cname').disabled = !C.cur || !!C.cur.temp;
+  $('circInfo').textContent = C.cur ? (C.cur.finish ? 'Meta ✓' : 'Sin meta') + ' · ' + C.cur.sectors.length + ' parciales' : '';
 }
 $('circSel').onchange = e => { const c = C.list.find(x => x.id === e.target.value); if(c) selectCircuit(c, true); };
 $('cname').onchange = e => { if(C.cur && !C.cur.temp){ C.cur.name = e.target.value.trim() || C.cur.name; saveCircuits(); renderCircuitUI(); } };
-let delArmed = false;
 $('bDelCirc').onclick = () => {
   if(!C.cur || C.cur.temp) return;
-  if(!delArmed){ delArmed = true; msg('Toca 🗑 otra vez para borrar "' + C.cur.name + '".'); setTimeout(() => delArmed = false, 3000); return; }
-  delArmed = false; C.list = C.list.filter(c => c !== C.cur); C.cur = C.list[0] || null;
-  saveCircuits(); selectCircuit(C.cur, true); msg('Circuito borrado.');
+  armButton($('bDelCirc'), null, '', () => {
+    C.list = C.list.filter(c => c !== C.cur); C.cur = C.list[0] || null;
+    saveCircuits(); selectCircuit(C.cur, true); msg('Circuito borrado.');
+  });
+  if($('bDelCirc').dataset.armed) msg('Toca la papelera otra vez para borrar "' + C.cur.name + '".');
 };
-
-// búsqueda en el mapa (OpenStreetMap)
 async function findPlace(){
   const q = $('q').value.trim(); if(!q) return;
   msg('Buscando…'); $('results').innerHTML = '';
@@ -400,14 +571,14 @@ async function findPlace(){
     if(!js.length){ msg('No he encontrado nada. Prueba con otro nombre.'); return; }
     msg('Elige el resultado:');
     js.forEach(it => {
-      const b = document.createElement('button'); b.textContent = it.display_name;
+      const b = document.createElement('button'); b.className = 'btn sm'; b.textContent = it.display_name;
       b.onclick = () => {
         const lat = +it.lat, lon = +it.lon; $('results').innerHTML = ''; $('q').value = '';
         const near = nearestSaved(lat, lon, 4000);
         if(near) selectCircuit(near, false);
         else newCircuit(presetNear(lat, lon) || it.display_name.split(',')[0], lat, lon);
         Map_.view([lat, lon], 16);
-        msg('Circuito listo. Ahora marca la meta y los parciales en el mapa.');
+        msg('Circuito listo. Marca la meta y los parciales en el mapa.');
       };
       $('results').appendChild(b);
     });
@@ -416,44 +587,45 @@ async function findPlace(){
 $('bFind').onclick = findPlace;
 $('q').addEventListener('keydown', e => { if(e.key === 'Enter') findPlace(); });
 
-/* ---------- mapa (Leaflet) ---------- */
+/* ---------- mapa ---------- */
 const Map_ = (() => {
-  const noop = { view(){}, drawLines(){}, newLap(){}, flush(){}, fit(){} };
-  if(!window.L){ $('map').innerHTML = '<p style="padding:20px;color:#8b96a3;text-align:center">Mapa no disponible sin conexión. El cronómetro funciona igual.</p>'; return noop; }
-  const map = L.map('map', {preferCanvas:true, zoomControl:true}).setView([40.2, -3.7], 5);
+  const noop = { view(){}, drawLines(){}, newLap(){}, flush(){}, fit(){}, clearTrack(){} };
+  if(!window.L){ $('map').innerHTML = '<p style="padding:24px;color:#8a95a2;text-align:center;margin:0">Mapa no disponible sin conexión. El cronómetro funciona igual.</p>'; return noop; }
+  const map = L.map('map', {preferCanvas:true}).setView([40.2, -3.7], 5);
   const sat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {maxZoom:20, maxNativeZoom:18, attribution:'Imágenes © Esri'});
   const osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom:20, maxNativeZoom:19, attribution:'© OpenStreetMap'});
   let satOn = true; sat.addTo(map);
-  const linesLayer = L.layerGroup().addTo(map);
-  const oldLaps = L.layerGroup().addTo(map);
-  let curLine = L.polyline([], {color:'#ffcc00', weight:3, opacity:.95}).addTo(map);
-  const me = L.circleMarker([0,0], {radius:7, color:'#111', weight:2, fillColor:'#ffcc00', fillOpacity:1});
+  const linesLayer = L.layerGroup().addTo(map), oldLaps = L.layerGroup().addTo(map);
+  const curStyle = {color:'#ffcc00', weight:3, opacity:.95};
+  let curLine = L.polyline([], curStyle).addTo(map);
+  const me = L.circleMarker([0,0], {radius:7, color:'#0b0d10', weight:2, fillColor:'#ffcc00', fillOpacity:1});
   let follow = true, drawMode = null, drawPts = [], tmp = null;
+  const setFollow = v => { follow = v; $('mFollow').classList.toggle('on', v); };
 
-  map.on('dragstart', () => { follow = false; $('mFollow').classList.remove('act'); });
-  $('mFollow').onclick = () => { follow = true; $('mFollow').classList.add('act'); if(S.lastLL) map.setView([S.lastLL.lat, S.lastLL.lon], Math.max(map.getZoom(), 16)); };
+  map.on('dragstart', () => setFollow(false));
+  $('mFollow').onclick = () => { setFollow(true); if(S.lastLL) map.setView([S.lastLL.lat, S.lastLL.lon], Math.max(map.getZoom(), 16)); };
   $('mLayer').onclick = () => {
     satOn = !satOn; if(satOn){ map.removeLayer(osm); sat.addTo(map); } else { map.removeLayer(sat); osm.addTo(map); }
-    $('mLayer').textContent = satOn ? '🗺 Mapa' : '🛰 Satélite';
+    $('mLayer').querySelector('span').textContent = satOn ? 'Mapa' : 'Satélite';
   };
   $('mFit').onclick = () => fit();
   function fit(){
     const pts = [];
     if(C.cur){ if(C.cur.finish) pts.push(C.cur.finish.a, C.cur.finish.b); C.cur.sectors.forEach(l => pts.push(l.a, l.b)); }
     curLine.getLatLngs().forEach(ll => pts.push([ll.lat, ll.lng]));
-    if(pts.length > 1){ follow = false; $('mFollow').classList.remove('act'); map.fitBounds(pts, {padding:[30,30], maxZoom:18}); }
+    if(pts.length > 1){ setFollow(false); map.fitBounds(pts, {padding:[30,30], maxZoom:18}); }
     else if(C.cur) map.setView(C.cur.center, 16);
   }
   function setDraw(mode){
     drawMode = mode; drawPts = []; if(tmp){ map.removeLayer(tmp); tmp = null; }
-    $('mFinish').classList.toggle('act', mode === 'finish');
-    $('mSector').classList.toggle('act', mode === 'sector');
-    if(mode){ follow = false; $('mFollow').classList.remove('act'); msg('Toca un lado de la pista en el mapa…'); }
+    $('mFinish').classList.toggle('on', mode === 'finish');
+    $('mSector').classList.toggle('on', mode === 'sector');
+    if(mode){ setFollow(false); msg('Toca un lado de la pista en el mapa…'); }
   }
   $('mFinish').onclick = () => setDraw(drawMode === 'finish' ? null : 'finish');
   $('mSector').onclick = () => setDraw(drawMode === 'sector' ? null : 'sector');
   $('mUndo').onclick = () => {
-    if(C.cur && C.cur.sectors.length){ C.cur.sectors.pop(); if(!C.cur.temp) saveCircuits(); drawLines(); renderLaps(); msg('Último parcial quitado.'); }
+    if(C.cur && C.cur.sectors.length){ C.cur.sectors.pop(); if(!C.cur.temp) saveCircuits(); drawLines(); renderLaps(); renderCircuitUI(); msg('Último parcial quitado.'); }
     else msg('No hay parciales que quitar.');
   };
   map.on('click', e => {
@@ -461,12 +633,13 @@ const Map_ = (() => {
     drawPts.push([e.latlng.lat, e.latlng.lng]);
     if(drawPts.length === 1){ tmp = L.circleMarker(e.latlng, {radius:6, color:'#fff', fillColor:'#ef4444', fillOpacity:1}).addTo(map); msg('Ahora toca el otro lado de la pista.'); return; }
     const circ = ensureCircuit(drawPts[0][0], drawPts[0][1]);
-    const l = {a:drawPts[0], b:drawPts[1], hdg:null};
-    if(drawMode === 'finish'){ circ.finish = l; S.lapStart = null; msg('Meta guardada.'); }
-    else { circ.sectors.push(l); msg('Parcial ' + circ.sectors.length + ' guardado. Puedes añadir más en orden de recorrido.'); }
+    const l = {a:drawPts[0], b:drawPts[1], hdg:null}, mode = drawMode;
+    if(mode === 'finish'){ circ.finish = l; cancelLap(); }
+    else circ.sectors.push(l);
     if(!circ.temp) saveCircuits();
-    const mode = drawMode; setDraw(null); drawLines(); renderLaps();
-    if(mode === 'sector') setDraw('sector'), msg('Parcial ' + circ.sectors.length + ' guardado. Toca otro o pulsa de nuevo el botón para terminar.');
+    setDraw(null); drawLines(); renderLaps(); renderCircuitUI();
+    if(mode === 'sector'){ setDraw('sector'); msg('Parcial ' + circ.sectors.length + ' guardado. Toca el siguiente o pulsa "Parcial" para terminar.'); }
+    else msg('Meta guardada.');
   });
   function drawLines(){
     linesLayer.clearLayers();
@@ -480,7 +653,7 @@ const Map_ = (() => {
     if(curLine.getLatLngs().length){
       curLine.setStyle({color:'#9aa4b1', weight:2, opacity:.5}); oldLaps.addLayer(curLine);
       const ls = oldLaps.getLayers(); if(ls.length > 4) oldLaps.removeLayer(ls[0]);
-      curLine = L.polyline([], {color:'#ffcc00', weight:3, opacity:.95}).addTo(map);
+      curLine = L.polyline([], curStyle).addTo(map);
     }
   }
   function flush(){
@@ -492,34 +665,59 @@ const Map_ = (() => {
   }
   function view(c, z){ map.setView(c, z); }
   function clearTrack(){ oldLaps.clearLayers(); curLine.setLatLngs([]); if(map.hasLayer(me)) map.removeLayer(me); }
+  window.addEventListener('resize', () => map.invalidateSize());
   return { view, drawLines, newLap, flush, fit, clearTrack };
 })();
 
 /* ---------- interfaz ---------- */
 let flashTimer = null;
-function flashMsg(big, label, sub, d, ms){
-  $('fT').textContent = big; $('fL').textContent = label;
+function flashMsg(big, label, sub, d, extra, ms){
+  $('fT').textContent = big; $('fL').textContent = label; $('fS').textContent = extra || '';
   const fd = $('fD'); fd.textContent = sub; fd.className = 'delta' + (d==null ? '' : d<0 ? ' neg' : ' pos');
   $('flash').classList.add('show');
   clearTimeout(flashTimer); flashTimer = setTimeout(() => $('flash').classList.remove('show'), ms || 3000);
 }
 $('flash').onclick = () => $('flash').classList.remove('show');
 
+function lapRows(laps, nS){
+  if(!laps.length) return '<tr><td colspan="4" class="empty">Aún no hay vueltas</td></tr>';
+  const best = Math.min(...laps.map(l => l.time)), bs = bestSectors(nS, laps);
+  return laps.slice().reverse().map(l => {
+    const isB = l.time === best;
+    const sl = l.secs ? '<div class="sl">' + l.secs.map((s,i) => `<span class="${nS===l.secs.length && s===bs[i]?'pb':''}">S${i+1} ${fmtS(s)}</span>`).join(' · ') + '</div>' : '';
+    return `<tr class="${isB?'best':''}"><td>${l.n}${isB?' ★':''}</td><td>${fmt(l.time)}${sl}</td><td>${isB?'—':fmtD(l.time-best)}</td><td>${Math.round(l.vmax)}</td></tr>`;
+  }).join('');
+}
 function renderLaps(){
-  const tb = $('laps'), n = nSeg(), bs = bestSectors(n);
-  if(!S.laps.length){ tb.innerHTML = '<tr><td colspan="4" class="empty">Aún no hay vueltas</td></tr>'; }
-  else {
-    const best = S.laps[S.bestIdx].time;
-    tb.innerHTML = S.laps.slice().reverse().map(l => {
-      const isB = l.time === best;
-      const sl = l.secs ? '<div class="sl">' + l.secs.map((s,i) => `<span class="${n===l.secs.length && s===bs[i]?'pb':''}">S${i+1} ${fmtS(s)}</span>`).join(' · ') + '</div>' : '';
-      return `<tr class="${isB?'best':''}"><td>${l.n}${isB?' ★':''}</td><td>${fmt(l.time)}${sl}</td><td>${isB?'—':fmtD(l.time-best)}</td><td>${Math.round(l.vmax)}</td></tr>`;
-    }).join('');
-  }
+  const n = nSeg(), bs = bestSectors(n);
+  $('laps').innerHTML = lapRows(S.laps, n);
+  $('lapCount').textContent = S.laps.length + (S.laps.length===1 ? ' vuelta' : ' vueltas');
   $('last').textContent = S.laps.length ? fmt(S.laps[S.laps.length-1].time) : '—';
   $('best').textContent = S.bestIdx>=0 ? fmt(S.laps[S.bestIdx].time) : '—';
   $('ideal').textContent = n && bs.every(x => x!=null) ? fmt(bs.reduce((a,b) => a+b, 0)) : '—';
 }
+function renderHist(){
+  $('histCount').textContent = HIST.length ? HIST.length + ' guardadas' : '';
+  if(!HIST.length){ $('hist').innerHTML = '<div class="empty" style="font-size:14px;color:var(--mut);text-align:center;padding:8px 0">Las tandas finalizadas aparecerán aquí</div>'; return; }
+  $('hist').innerHTML = HIST.map(h => {
+    const d = new Date(h.date), nS = Math.max(0, ...h.laps.map(l => l.secs ? l.secs.length : 0));
+    const when = d.toLocaleDateString('es-ES', {day:'numeric', month:'short'}) + ' · ' + d.toLocaleTimeString('es-ES', {hour:'2-digit', minute:'2-digit'});
+    return `<details class="hi"><summary>
+      <div class="t1">${esc(h.circ)}<span>${when}</span></div>
+      <div class="t2">${h.laps.length} vueltas · Mejor <b>${fmt(h.best)}</b>${h.ideal ? ' · Ideal ' + fmt(h.ideal) : ''} · ${fmtDur(h.dur)}</div>
+    </summary>
+    <table><tbody>${lapRows(h.laps, nS)}</tbody></table>
+    <div class="g2" style="margin-top:10px">
+      <button class="btn sm" data-csv="${h.id}"><svg class="i"><use href="#i-down"/></svg>CSV</button>
+      <button class="btn sm" data-del="${h.id}"><svg class="i"><use href="#i-trash"/></svg><span>Borrar</span></button>
+    </div></details>`;
+  }).join('');
+}
+$('hist').addEventListener('click', e => {
+  const b = e.target.closest('button'); if(!b) return;
+  if(b.dataset.csv){ const h = HIST.find(x => x.id == b.dataset.csv); if(h) download('tanda_' + new Date(h.date).toISOString().slice(0,16).replace(/[:T]/g,'-') + '.csv', csvFor(h.laps), 'text/csv'); }
+  if(b.dataset.del){ const id = b.dataset.del; armButton(b, b.querySelector('span'), '¿Seguro?', () => { HIST = HIST.filter(x => x.id != id); store('lt_hist', HIST); renderHist(); }); }
+});
 function renderSecs(now){
   const n = nSeg(), box = $('secs');
   if(!n){ box.innerHTML = ''; return; }
@@ -531,7 +729,7 @@ function renderSecs(now){
       if(t != null){ sub = fmtS(t); if(bs[i]!=null){ cls += t <= bs[i] ? ' pb' : ' slow'; top += ' ' + fmtD(t - bs[i]); } else cls += ' pb'; }
     } else if(S.lapStart != null && i === S.curSecs.length && S.prev){
       const lastSplit = S.splits.length ? S.splits[S.splits.length-1] : 0;
-      if(lastSplit != null){ const el = S.prev.t - S.lapStart + Math.min(now - S.lastWall, 1200)*S.rate - lastSplit; sub = fmtS(el); }
+      if(lastSplit != null) sub = fmtS(S.prev.t - S.lapStart + Math.min(now - S.lastWall, 1200)*S.rate - lastSplit);
       cls += ' run';
     } else if(bs[i] != null) sub = fmtS(bs[i]);
     out.push(`<div class="${cls}"><small>${top}</small>${sub}</div>`);
@@ -542,27 +740,31 @@ function renderSecs(now){
 let lastDraw = 0, lastMap = 0;
 function frame(now){
   requestAnimationFrame(frame);
-  if(S.lapStart!=null && S.prev){
-    $('cur').textContent = fmt(S.prev.t - S.lapStart + Math.min(now - S.lastWall, 1200)*S.rate);
-    $('lapLabel').textContent = 'Vuelta ' + (S.laps.length+1) + (C.cur ? ' · ' + C.cur.name : '');
-  } else {
-    $('cur').textContent = '0:00.00';
-    $('lapLabel').textContent = C.cur?.finish ? 'Esperando paso por meta' : 'Sin meta';
-  }
+  const cur = $('cur'), running = S.lapStart!=null && S.prev && S.run==='running';
+  cur.textContent = running ? fmt(S.prev.t - S.lapStart + Math.min(now - S.lastWall, 1200)*S.rate) : '0:00.00';
+  cur.classList.toggle('idle', !running);
   const de = $('delta'); de.textContent = fmtD(S.delta);
   de.className = 'delta' + (S.delta==null ? '' : S.delta<0 ? ' neg' : ' pos');
 
   if(now - lastDraw < 100) return;
   lastDraw = now;
+  let lbl;
+  if(S.run === 'idle') lbl = 'Pulsa Empezar';
+  else if(S.run === 'paused') lbl = 'En pausa';
+  else if(!C.cur?.finish) lbl = 'Falta marcar la meta';
+  else if(S.lapStart == null) lbl = 'Esperando paso por meta';
+  else lbl = 'Vuelta ' + (S.laps.length+1) + ' · ' + C.cur.name;
+  $('lapLabel').textContent = lbl;
+  $('sessT').textContent = 'Tanda ' + fmtDur(sessionTotal());
   renderSecs(now);
   const live = S.prev && (now - S.lastWall) < 3000;
   $('spd').textContent = live ? Math.round(S.lastSpd*3.6) : 0;
   const hz = live ? S.hzT.length : 0, hp = $('hz');
   hp.textContent = hz + ' Hz'; hp.className = 'pill' + (hz>=10 ? ' on' : hz>0 ? ' warn' : '');
-  let fi = '—';
-  if(S.sats!=null) fi = S.sats + ' sat' + (S.hdop ? ' · HDOP ' + S.hdop : '');
-  else if(S.acc!=null) fi = '±' + Math.round(S.acc) + ' m';
-  $('fixInfo').textContent = fi;
+  let fi = '';
+  if(S.sats!=null) fi = ' · ' + S.sats + ' sat';
+  else if(S.acc!=null) fi = ' · ±' + Math.round(S.acc) + ' m';
+  if(live) hp.textContent = hz + ' Hz' + fi;
   if(now - lastMap > 500){ lastMap = now; Map_.flush(); }
 }
 
@@ -573,74 +775,75 @@ function loadAll(){
   const curId = load('lt_cur'); C.cur = C.list.find(c => c.id === curId) || C.list[0] || null;
   const s = load('lt_session');
   if(s && Array.isArray(s.laps)){ S.laps = s.laps; S.bestIdx = s.bestIdx; }
-  renderCircuitUI(); renderLaps(); Map_.drawLines();
+  HIST = load('lt_hist') || [];
+  renderCircuitUI(); renderLaps(); renderHist(); updateCtrl(); Map_.drawLines();
   if(C.cur) Map_.view(C.cur.center, 16);
 }
 function resetLive(){
-  S.origin=null; S.prev=null; S.lapStart=null; S.lapDist=0; S.lapSamples=[]; S.splits=[]; S.curSecs=[];
-  S.hzT=[]; S.sats=null; S.hdop=null; S.acc=null; S.delta=null; S.lastSpd=0; S.detected=false; S.mapBuf=[];
+  S.origin=null; S.prev=null; cancelLap(); S.lapDist=0;
+  S.hzT=[]; S.sats=null; S.hdop=null; S.acc=null; S.lastSpd=0; S.detected=false; S.mapBuf=[];
 }
-let resetArmed = false;
-$('bReset').onclick = () => {
-  if(!resetArmed){ resetArmed = true; $('bReset').textContent = '¿Seguro?';
-    setTimeout(() => { resetArmed = false; $('bReset').textContent = '🗑 Nueva sesión'; }, 3000); return; }
-  resetArmed = false; $('bReset').textContent = '🗑 Nueva sesión';
-  S.laps = []; S.bestIdx = -1; S.lapStart = null; S.delta = null; S.gpx = []; S.splits = []; S.curSecs = [];
-  Map_.clearTrack(); saveSession(); renderLaps(); msg('Sesión borrada. El circuito y sus líneas se mantienen.');
-};
 function download(name, text, type){
   const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], {type}));
   a.download = name; document.body.appendChild(a); a.click(); a.remove();
 }
 const stamp = () => new Date().toISOString().slice(0,16).replace(/[:T]/g,'-');
-$('bCsv').onclick = () => {
-  if(!S.laps.length){ msg('No hay vueltas que exportar.'); return; }
-  const best = S.laps[S.bestIdx].time, ns = Math.max(0, ...S.laps.map(l => l.secs ? l.secs.length : 0));
+function csvFor(laps){
+  const best = Math.min(...laps.map(l => l.time)), ns = Math.max(0, ...laps.map(l => l.secs ? l.secs.length : 0));
   const head = ['vuelta','tiempo','segundos','diferencia_mejor','vmax_kmh'].concat(Array.from({length:ns}, (_,i) => 'S' + (i+1)));
-  const rows = S.laps.map(l => [l.n, fmt(l.time), (l.time/1000).toFixed(3), ((l.time-best)/1000).toFixed(3), Math.round(l.vmax)]
-    .concat(Array.from({length:ns}, (_,i) => l.secs && l.secs[i]!=null ? (l.secs[i]/1000).toFixed(3) : '')).join(';'));
-  download('tanda_' + stamp() + '.csv', [head.join(';')].concat(rows).join('\n'), 'text/csv');
+  return [head.join(';')].concat(laps.map(l => [l.n, fmt(l.time), (l.time/1000).toFixed(3), ((l.time-best)/1000).toFixed(3), Math.round(l.vmax)]
+    .concat(Array.from({length:ns}, (_,i) => l.secs && l.secs[i]!=null ? (l.secs[i]/1000).toFixed(3) : '')).join(';'))).join('\n');
+}
+$('bCsv').onclick = () => {
+  if(!S.laps.length){ msg('No hay vueltas en la tanda actual. Las tandas terminadas se exportan desde el historial.'); return; }
+  download('tanda_' + stamp() + '.csv', csvFor(S.laps), 'text/csv');
 };
 $('bGpx').onclick = () => {
-  if(S.gpx.length < 2){ msg('Aún no hay trazado grabado.'); return; }
-  const name = esc(C.cur ? C.cur.name : 'Tanda');
+  const data = S.gpx.length > 1 ? S.gpx : S.lastGpx;
+  if(!data || data.length < 2){ msg('Aún no hay trazado grabado.'); return; }
   const wpt = [];
   if(C.cur?.finish){ const f = C.cur.finish; wpt.push(`<wpt lat="${(f.a[0]+f.b[0])/2}" lon="${(f.a[1]+f.b[1])/2}"><name>META</name></wpt>`); }
   (C.cur?.sectors || []).forEach((l,i) => wpt.push(`<wpt lat="${(l.a[0]+l.b[0])/2}" lon="${(l.a[1]+l.b[1])/2}"><name>Parcial ${i+1}</name></wpt>`));
-  const pts = S.gpx.map(p => `<trkpt lat="${p[0].toFixed(7)}" lon="${p[1].toFixed(7)}"><time>${new Date(p[2]).toISOString()}</time></trkpt>`).join('\n');
+  const pts = data.map(p => `<trkpt lat="${p[0].toFixed(7)}" lon="${p[1].toFixed(7)}"><time>${new Date(p[2]).toISOString()}</time></trkpt>`).join('\n');
   download('tanda_' + stamp() + '.gpx',
-    `<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="JCB Laptimer" xmlns="http://www.topografix.com/GPX/1/1">\n${wpt.join('\n')}\n<trk><name>${name}</name><trkseg>\n${pts}\n</trkseg></trk>\n</gpx>`,
+    `<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="JCB Laptimer" xmlns="http://www.topografix.com/GPX/1/1">\n${wpt.join('\n')}\n<trk><name>${esc(C.cur ? C.cur.name : 'Tanda')}</name><trkseg>\n${pts}\n</trkseg></trk>\n</gpx>`,
     'application/gpx+xml');
 };
 function markHere(kind){
   if(!S.lastLL || S.lastHeading==null){ msg('Necesito GPS y que la moto esté en movimiento para saber la dirección.'); return; }
   const circ = ensureCircuit(S.lastLL.lat, S.lastLL.lon);
   const l = lineAt(S.lastLL.lat, S.lastLL.lon, S.lastHeading, +$('width').value);
-  if(kind === 'finish'){ circ.finish = l; S.lapStart = null; S.delta = null; msg('Meta marcada. La vuelta empieza en el próximo paso por meta.'); }
+  if(kind === 'finish'){ circ.finish = l; cancelLap(); msg('Meta marcada. La vuelta empieza en el próximo paso por meta.'); }
   else { circ.sectors.push(l); msg('Parcial ' + circ.sectors.length + ' marcado.'); }
   if(!circ.temp) saveCircuits();
-  Map_.drawLines(); renderLaps();
+  Map_.drawLines(); renderLaps(); renderCircuitUI();
 }
 $('bLine').onclick = () => markHere('finish');
 $('bSecHere').onclick = () => markHere('sector');
 
 /* ---------- fuentes de GPS ---------- */
+const SRC_BTN = {'GPS USB':'bUsb', 'GPS móvil':'bPhone', 'Simulación':'bSim'};
 function setSrc(name){
   S.srcName = name; const p = $('src');
   p.textContent = name || 'Sin GPS'; p.className = 'pill' + (name ? ' on' : '');
-  ['bUsb','bPhone','bSim'].forEach(id => $(id).classList.remove('act'));
+  Object.values(SRC_BTN).forEach(id => $(id).classList.remove('on'));
+  if(name && SRC_BTN[name]) $(SRC_BTN[name]).classList.add('on');
 }
 async function stop(){
   if(stopFn){ const f = stopFn; stopFn = null; try{ await f(); }catch(e){} }
-  if(C.cur?.temp){ selectCircuit(C.saved, true); C.saved = null; }
-  S.rate = 1; setSrc(null); resetLive(); releaseWake();
+  if(C.cur?.temp){ const sv = C.saved; C.saved = null; selectCircuit(sv, true); }
+  S.rate = 1; setSrc(null); resetLive(); if(S.run !== 'running') releaseWake();
 }
-$('bStop').onclick = () => { stop(); msg('GPS parado.'); };
-async function wake(){ try{ if('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); }catch(e){} }
-function releaseWake(){ try{ wakeLock && wakeLock.release(); }catch(e){} wakeLock = null; }
-document.addEventListener('visibilitychange', () => { if(document.visibilityState==='visible' && S.srcName) wake(); });
+function toggleSrc(name, starter){ return async () => { if(S.srcName === name){ await stop(); msg('GPS desconectado.'); } else await starter(); }; }
+$('bUsb').onclick = toggleSrc('GPS USB', () => startUsb());
+$('bPhone').onclick = toggleSrc('GPS móvil', () => startPhone());
+$('bSim').onclick = toggleSrc('Simulación', () => startSim());
 
-$('bPhone').onclick = async () => {
+async function wake(){ try{ if('wakeLock' in navigator && !wakeLock) wakeLock = await navigator.wakeLock.request('screen'); }catch(e){} }
+function releaseWake(){ try{ wakeLock && wakeLock.release(); }catch(e){} wakeLock = null; }
+document.addEventListener('visibilitychange', () => { if(document.visibilityState==='visible' && (S.srcName || S.run==='running')){ wakeLock = null; wake(); } });
+
+async function startPhone(){
   await stop();
   if(!navigator.geolocation){ msg('Este navegador no da acceso al GPS.'); return; }
   const id = navigator.geolocation.watchPosition(pos => {
@@ -648,9 +851,9 @@ $('bPhone').onclick = async () => {
     onSample({t:pos.timestamp, lat:c.latitude, lon:c.longitude, spd:c.speed, hdg:c.heading});
   }, err => msg('GPS móvil: ' + err.message), {enableHighAccuracy:true, maximumAge:0, timeout:15000});
   stopFn = () => navigator.geolocation.clearWatch(id);
-  setSrc('GPS móvil'); $('bPhone').classList.add('act'); wake();
+  setSrc('GPS móvil'); store('lt_src', 'phone'); wake();
   msg('GPS del móvil activo (~1 Hz). Para tiempos precisos usa el receptor USB.');
-};
+}
 
 // NMEA
 let nbuf = '';
@@ -683,8 +886,7 @@ function nmeaTime(hms, dmy){
   return base + Math.round(((hh*60+mm)*60+ss)*1000);
 }
 
-// Receptor USB: Web Serial si existe, si no WebUSB (CDC-ACM / CP210x)
-$('bUsb').onclick = async () => {
+async function startUsb(){
   await stop(); nbuf = '';
   try{
     if('serial' in navigator){
@@ -701,8 +903,8 @@ $('bUsb').onclick = async () => {
     if(e.name === 'NotFoundError') msg('No se eligió ningún dispositivo.');
     else msg('Error USB: ' + e.message);
   }
-};
-function usbStarted(how){ setSrc('GPS USB'); $('bUsb').classList.add('act'); wake(); msg('Receptor conectado (' + how + '). Esperando datos…'); }
+}
+function usbStarted(how){ setSrc('GPS USB'); store('lt_src', 'usb'); wake(); msg('Receptor conectado (' + how + '). Esperando datos…'); }
 async function readSerial(port){
   const reader = port.readable.getReader(), dec = new TextDecoder();
   stopFn = async () => { try{ await reader.cancel(); }catch(e){} try{ reader.releaseLock(); await port.close(); }catch(e){} };
@@ -742,8 +944,7 @@ async function openUsb(dev){
 }
 if(navigator.usb) navigator.usb.addEventListener('disconnect', () => { if(S.srcName === 'GPS USB'){ stop(); msg('Receptor USB desconectado.'); } });
 
-// Simulación: circuito ficticio a 25 Hz, x4 de velocidad, con 2 parciales
-$('bSim').onclick = async () => {
+async function startSim(){
   await stop();
   const lat0 = 36.7085, lon0 = -6.0340, R = 330, k = Math.cos(lat0*Math.PI/180);
   const pos = th => { const r = R*(1 + 0.22*Math.sin(2*th) + 0.12*Math.cos(3*th)); return {x:r*Math.cos(th), y:0.6*r*Math.sin(th)}; };
@@ -763,9 +964,9 @@ $('bSim').onclick = async () => {
     onSample({t:simT, lat:q.lat, lon:q.lon, spd:v, hdg:null});
   }, 10);
   stopFn = () => clearInterval(iv);
-  setSrc('Simulación'); $('bSim').classList.add('act');
-  msg('Simulación a 25 Hz (va 4 veces más rápido), con meta y 2 parciales.');
-};
+  setSrc('Simulación'); store('lt_src', 'sim');
+  msg('Simulación a 25 Hz (x4 de velocidad) con meta y 2 parciales. Pulsa Empezar.');
+}
 
 loadAll();
 requestAnimationFrame(frame);
